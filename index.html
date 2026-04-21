@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Strict Speaking Tutor</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 40px; background: #1a1a2e; color: white; }
+        #box { background: #16213e; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-width: 800px; margin: auto; }
+        #question { font-size: 1.8em; margin: 20px 0; color: #48dbfb; }
+        #status { font-style: italic; color: #a29bfe; margin-bottom: 10px; }
+        #feedback { color: #ff6b6b; font-weight: bold; min-height: 1.5em; }
+        button { padding: 15px 30px; font-size: 1.2em; cursor: pointer; background: #00d2d3; border: none; border-radius: 50px; color: white; font-weight: bold; }
+        button:disabled { background: #576574; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div id="box">
+    <h1>Technical English Oral Exam</h1>
+    <p>Conductors, Insulators & Resistance</p>
+    <hr>
+    <div id="status">Click the button to start the voice system</div>
+    <button id="startBtn">START TUTOR</button>
+    <div id="question"></div>
+    <div id="feedback"></div>
+</div>
+
+<script>
+    const questions = [
+        { q: "What is electric current?", a: "Electric current is the flow of electric charge.", key: "flow" },
+        { q: "What is a material where electricity moves easily?", a: "A material where electricity moves easily is called a conductor.", key: "conductor" },
+        { q: "What are the free particles in most conductors?", a: "The free particles in most conductors are electrons.", key: "electrons" },
+        { q: "What are most electric wires made of?", a: "Most electric wires are made of metal, usually copper.", key: "metal" },
+        { q: "What is the name for materials that resist electric charge?", a: "Materials that resist electric charge are known as insulators.", key: "insulators" },
+        { q: "What happens if extra charge is applied to an insulator?", a: "The charge will stay in place and will not move.", key: "stay" },
+        { q: "Name an insulator from the text.", a: "Glass, rubber, plastic and wood are good insulators.", key: ["glass","rubber","plastic","wood"] },
+        { q: "Why are cables covered with insulating material?", a: "The insulator ensures that the cables are safe to touch.", key: "safe" },
+        { q: "What is resistance?", a: "Resistance is a material's opposition to the passage of current.", key: "resistance" },
+        { q: "What happens when electrons collide with atoms?", a: "They give up energy which is converted into heat.", key: "heat" }
+    ];
+
+    let currentIdx = 0;
+    const synth = window.speechSynthesis;
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recog = new Recognition();
+    recog.lang = 'en-US';
+    recog.continuous = false;
+
+    const startBtn = document.getElementById('startBtn');
+    const questionDiv = document.getElementById('question');
+    const feedbackDiv = document.getElementById('feedback');
+    const statusDiv = document.getElementById('status');
+
+    startBtn.onclick = () => { startBtn.style.display = 'none'; ask(); };
+
+    function speak(text, callback) {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        u.rate = 0.9; // Leggermente più lento per chiarezza
+        u.onend = callback;
+        synth.speak(u);
+    }
+
+    function ask() {
+        feedbackDiv.innerText = "";
+        const qText = questions[currentIdx].q;
+        questionDiv.innerText = qText;
+        statusDiv.innerText = "Tutor is speaking...";
+        speak(qText, () => {
+            statusDiv.innerText = "Listening... SPEAK NOW!";
+            recog.start();
+        });
+    }
+
+    recog.onresult = (event) => {
+        const reply = event.results[0][0].transcript.toLowerCase();
+        const item = questions[currentIdx];
+        const keys = Array.isArray(item.key) ? item.key : [item.key];
+        const found = keys.some(k => reply.includes(k));
+
+        if (reply.split(' ').length < 4) {
+            handleError("Answer too short! Use a full sentence.");
+        } else if (!found) {
+            handleError("Wrong. Listen and repeat: " + item.a, item.a);
+        } else {
+            statusDiv.innerText = "Correct!";
+            speak("Correct. Next question.", () => {
+                currentIdx++;
+                if (currentIdx < questions.length) ask();
+                else { questionDiv.innerText = "EXAM FINISHED! GREAT JOB!"; statusDiv.innerText = ""; }
+            });
+        }
+    };
+
+    function handleError(msg, repeat) {
+        feedbackDiv.innerText = msg;
+        speak(msg, () => {
+            setTimeout(() => { recog.start(); statusDiv.innerText = "Listening again..."; }, 500);
+        });
+    }
+</script>
+</body>
+</html>
