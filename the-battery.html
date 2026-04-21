@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speaking Tutor — The Battery</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14; --surface: #161a24; --surface2: #1e2333;
+    --border: #2a3050; --accent: #4fd1c5; --accent2: #f6ad55;
+    --danger: #fc8181; --text: #e2e8f0; --muted: #718096; --ok: #68d391;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px; background-image: radial-gradient(ellipse at 20% 20%, rgba(79,209,197,0.07) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(246,173,85,0.05) 0%, transparent 50%); }
+  header { text-align: center; margin-bottom: 20px; }
+  header h1 { font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 800; letter-spacing: -0.03em; color: var(--accent); line-height: 1.1; }
+  header p { margin-top: 6px; font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  #questionBadge { margin-top: 8px; font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--accent2); }
+  .api-bar { width: 100%; max-width: 680px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+  .api-bar label { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; }
+  .api-bar input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 0.78rem; outline: none; }
+  .api-bar input:focus { border-color: var(--accent); }
+  .api-bar button { background: var(--accent); color: #0d0f14; border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .chat-container { width: 100%; max-width: 680px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; height: 400px; margin-bottom: 16px; }
+  .chat-log { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
+  .chat-log::-webkit-scrollbar { width: 4px; }
+  .chat-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .msg { display: flex; gap: 10px; animation: fadeUp 0.3s ease both; }
+  .msg.tutor { flex-direction: row; }
+  .msg.student { flex-direction: row-reverse; }
+  .msg-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; font-family: 'Space Mono', monospace; }
+  .tutor .msg-avatar { background: linear-gradient(135deg, var(--accent), #38b2ac); color: #0d0f14; }
+  .student .msg-avatar { background: linear-gradient(135deg, var(--accent2), #ed8936); color: #0d0f14; }
+  .msg-bubble { max-width: 78%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.55; }
+  .tutor .msg-bubble { background: var(--surface2); border: 1px solid var(--border); border-top-left-radius: 3px; }
+  .student .msg-bubble { background: rgba(79,209,197,0.1); border: 1px solid rgba(79,209,197,0.25); border-top-right-radius: 3px; }
+  .controls { width: 100%; max-width: 680px; display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .btn-mic { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--accent); background: transparent; color: var(--accent); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .btn-mic.recording { background: rgba(79,209,197,0.15); animation: pulse-ring 1.2s ease infinite; }
+  .btn-mic.disabled { opacity: 0.4; pointer-events: none; }
+  @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(79,209,197,0.4); } 70% { box-shadow: 0 0 0 14px rgba(79,209,197,0); } 100% { box-shadow: 0 0 0 0 rgba(79,209,197,0); } }
+  .btn-help { flex: 1; padding: 14px; border-radius: 12px; border: 1px solid var(--accent2); background: transparent; color: var(--accent2); font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+  .btn-help.disabled { opacity: 0.4; pointer-events: none; }
+  .btn-reset { padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+  .btn-reset.disabled { opacity: 0.4; pointer-events: none; }
+  .transcript-preview { width: 100%; max-width: 680px; min-height: 36px; background: var(--surface2); border: 1px dashed var(--border); border-radius: 10px; padding: 10px 14px; font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--muted); font-style: italic; }
+  .status { width: 100%; max-width: 680px; margin-top: 10px; font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); text-align: center; min-height: 18px; }
+  .status.active { color: var(--accent); }
+  .status.warn { color: var(--accent2); }
+  .status.error { color: var(--danger); }
+  .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
+  .typing-indicator span { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: bounce 1.2s ease infinite; opacity: 0.6; }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Report */
+  #reportPanel { display: none; width: 100%; max-width: 680px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 20px; }
+  #reportPanel h2 { font-size: 1.3rem; font-weight: 800; color: var(--accent); margin-bottom: 6px; }
+  .report-meta { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--muted); margin-bottom: 20px; }
+  .report-score { font-size: 2rem; font-weight: 800; color: var(--accent2); margin-bottom: 4px; }
+  .report-grade { font-family: 'Space Mono', monospace; font-size: 0.85rem; margin-bottom: 20px; }
+  .report-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  .report-table th { font-family: 'Space Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  .report-table td { padding: 10px 12px; font-size: 0.82rem; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: top; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-family: 'Space Mono', monospace; font-size: 0.65rem; font-weight: 700; }
+  .badge-ok { background: rgba(104,211,145,0.15); color: var(--ok); }
+  .badge-warn { background: rgba(246,173,85,0.15); color: var(--accent2); }
+  .badge-err { background: rgba(252,129,129,0.15); color: var(--danger); }
+  .btn-print { padding: 12px 24px; background: var(--accent); color: #0d0f14; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+  @media print {
+    body { background: white; color: black; padding: 0; }
+    header, .api-bar, .chat-container, .controls, .transcript-preview, .status { display: none !important; }
+    #reportPanel { display: block !important; border: none; padding: 0; color: black; }
+    #reportPanel h2, .report-score { color: #1a1a1a; }
+    .report-grade, .report-meta { color: #555; }
+    .report-table td, .report-table th { color: #333; border-color: #ddd; }
+    .badge-ok { background: #e6f9ee; color: #276749; }
+    .badge-warn { background: #fffbeb; color: #975a16; }
+    .badge-err { background: #fff5f5; color: #c53030; }
+    .btn-print { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Speaking Tutor</h1>
+  <p>The Battery</p>
+  <div id="questionBadge">Enter API key to start</div>
+</header>
+<div class="api-bar">
+  <label>API Key</label>
+  <input type="text" id="apiKey" placeholder="Paste your API key here" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+  <button onclick="startSession()">Start</button>
+</div>
+<div class="chat-container">
+  <div class="chat-log" id="chatLog">
+    <div class="msg tutor"><div class="msg-avatar">T</div>
+    <div class="msg-bubble">Enter your API key and press <strong>Start</strong> to begin.</div></div>
+  </div>
+</div>
+<div class="controls">
+  <button class="btn-mic disabled" id="btnMic" onclick="toggleMic()">🎙️</button>
+  <button class="btn-help disabled" id="btnHelp" onclick="requestHelp()">💡 Help — I'm stuck</button>
+  <button class="btn-reset disabled" id="btnReset" onclick="resetSession()">↺ Restart</button>
+</div>
+<div class="transcript-preview" id="transcriptPreview">Your words will appear here while you speak...</div>
+<div class="status" id="status">Enter API key to begin</div>
+<div id="reportPanel"></div>
+
+<script>
+const QUESTIONS = [
+  { q: "What does a battery do?", keys: "transforms chemical energy into electrical energy" },
+  { q: "What are the three basic parts of a simple cell?", keys: "negative electrode, positive electrode, and a liquid or paste called the electrolyte" },
+  { q: "What happens to the electrodes in the electrolyte?", keys: "electrodes dissolve in the electrolyte and form charged atoms called ions; creates an excess charge in the two electrodes" },
+  { q: "What happens when the two electrodes are connected by a wire?", keys: "an electric current flows between the two electrodes" },
+  { q: "What is the difference between a cell and a battery?", keys: "a cell is a single unit; a battery consists of two or more cells in combination" },
+  { q: "In a dry cell battery, what is the role of the carbon rod?", keys: "the carbon rod acts as the positive electrode, the cathode" },
+  { q: "What is the electrolyte in a dry cell battery?", keys: "ammonium chloride paste" },
+  { q: "What acts as the negative electrode in a dry cell battery?", keys: "the zinc casing acts as the negative electrode, the anode" },
+  { q: "How can you make a simple cell using fruit?", keys: "push two different types of metal into a piece of fruit and connect them with a wire; acid in the fruit causes chemical reactions at each electrode" }
+];
+
+const MAX_ATTEMPTS = 2;
+
+const MODEL_ANSWERS = [
+  "A battery transforms chemical energy into electrical energy.",
+  "A simple cell consists of three basic parts: a negative electrode, a positive electrode, and a liquid or paste between them called the electrolyte.",
+  "The electrodes dissolve in the electrolyte and form charged atoms called ions. This creates an excess charge in the two electrodes.",
+  "When the two electrodes are connected by a wire, an electric current flows between them.",
+  "A cell is a single unit. A battery consists of two or more cells in combination, although the word battery is also used to refer to a single cell.",
+  "The carbon rod acts as the positive electrode — the cathode.",
+  "The electrolyte in a dry cell battery is ammonium chloride paste.",
+  "The zinc casing acts as the negative electrode — the anode.",
+  "You can push two different types of metal into a piece of fruit and connect them with a wire. The acid in the fruit causes chemical reactions at each electrode, producing electric current."
+];
+
+const SYSTEM_PROMPT = `You are an English speaking tutor evaluating a student's spoken answer. The student is an Italian high school student at B1 level.
+
+You receive:
+QUESTION: [the question]
+KEY IDEAS: [concepts required]
+STUDENT SAID: [transcription]
+
+Reply ONLY with valid JSON, no markdown, no text outside the JSON:
+{
+  "correct": true or false,
+  "error_type": "none" | "grammar" | "vocabulary" | "pronunciation",
+  "correction": "specific correction text or empty string",
+  "message": "one sentence feedback or hint"
+}
+
+EVALUATION RULES:
+
+correct:
+- true if the student covered the key ideas. Synonyms and paraphrases are FINE.
+- false if key ideas are genuinely missing or wrong.
+
+error_type — only flag SIGNIFICANT errors, ignore minor transcription artifacts:
+- IGNORE: missing/wrong articles (a/the/an), minor punctuation, missing spaces, small preposition slips
+- "grammar": clear error that changes meaning. E.g. "electrons is free" instead of "electrons are free".
+- "vocabulary": key technical word replaced by clearly wrong word. E.g. "transport" instead of "transforms", "flukes" instead of "flow".
+- "pronunciation": word seriously phonetically distorted. E.g. "konduktor", "rezistanse".
+- "none": no significant errors.
+
+correction:
+- grammar: corrected phrase. E.g. "Say: 'electrons ARE free', not 'electrons IS free'."
+- vocabulary: wrong word and correct one. E.g. "You said 'transport' — the correct word is 'transforms'."
+- pronunciation: correct pronunciation. E.g. "The word is pronounced 'con-DUC-tor'."
+- none: ""
+
+message:
+- correct=true AND error_type="none": one praise word only. "Great!" / "Exactly!" / "Perfect!" / "Well done!"
+- correct=false: a SPECIFIC hint using a keyword. Make it different each time.
+- error_type not "none": just "Almost!" or "Good try!" — correction field handles the detail.
+Never write the correction inside message. Never ask a follow-up question. One sentence max.
+
+Special inputs:
+- [SESSION START]: {"correct":false,"error_type":"none","correction":"","message":"Hello! Let's begin."}
+- [HELP REQUEST]: {"correct":false,"error_type":"none","correction":"","message":"[one specific keyword hint for the current question]"}
+- [SILENCE]: {"correct":false,"error_type":"none","correction":"","message":"Take your time! Think about: [most important keyword]."}`;
+
+// State
+let currentQuestion = 1;
+let attemptCount = 0;
+let awaitingRepeat = false;
+let sessionActive = false;
+let apiKey = '';
+let recognition = null;
+let isRecording = false;
+let silenceTimer = null;
+let sendTimer = null;
+let accumulatedTranscript = '';
+let reportData = [];
+const SILENCE_TIMEOUT = 20000;
+
+function startSession() {
+  apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey.startsWith('sk-ant-')) { setStatus('Invalid API key', 'error'); return; }
+  sessionActive = true;
+  currentQuestion = 1;
+  attemptCount = 0;
+  awaitingRepeat = false;
+  reportData = [];
+  updateBadge();
+  document.getElementById('reportPanel').style.display = 'none';
+  ['btnMic','btnHelp','btnReset'].forEach(id => document.getElementById(id).classList.remove('disabled'));
+  setStatus('Session started — press 🎙️ to speak', 'active');
+  callAPI('[SESSION START]', true);
+}
+
+function resetSession() {
+  if (isRecording) stopRecording(false);
+  window.speechSynthesis.cancel();
+  sessionActive = false; currentQuestion = 1; attemptCount = 0;
+  awaitingRepeat = false; reportData = []; accumulatedTranscript = '';
+  document.getElementById('chatLog').innerHTML = `<div class="msg tutor"><div class="msg-avatar">T</div><div class="msg-bubble">Session reset. Press <strong>Start</strong> to begin again.</div></div>`;
+  ['btnMic','btnHelp','btnReset'].forEach(id => document.getElementById(id).classList.add('disabled'));
+  document.getElementById('transcriptPreview').textContent = 'Your words will appear here while you speak...';
+  document.getElementById('questionBadge').textContent = 'Enter API key to start';
+  document.getElementById('reportPanel').style.display = 'none';
+  setStatus('', '');
+}
+
+function updateBadge() {
+  document.getElementById('questionBadge').textContent = 'Question ' + currentQuestion + ' of ' + QUESTIONS.length;
+}
+
+function toggleMic() {
+  if (!sessionActive) return;
+  isRecording ? stopRecording(true) : startRecording();
+}
+
+function startRecording() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    setStatus('Speech recognition not supported — use Chrome', 'error'); return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  accumulatedTranscript = '';
+  let sent = false;
+
+  function sendNow() {
+    if (sent) return;
+    sent = true;
+    clearTimeout(silenceTimer);
+    clearTimeout(sendTimer);
+    const text = accumulatedTranscript.trim();
+    accumulatedTranscript = '';
+    isRecording = false;
+    document.getElementById('btnMic').classList.remove('recording');
+    document.getElementById('btnMic').textContent = '🎙️';
+    if (recognition) { recognition.onend = null; try { recognition.stop(); } catch(e) {} recognition = null; }
+    if (text) {
+      document.getElementById('transcriptPreview').textContent = text;
+      if (awaitingRepeat) {
+        awaitingRepeat = false;
+        attemptCount = 0;
+        addMessage('student', text);
+        callAPI(text, false);
+      } else {
+        callAPI(text, false);
+      }
+    }
+  }
+
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('btnMic').classList.add('recording');
+    document.getElementById('btnMic').textContent = '⏹️';
+    setStatus('Listening... speak now', 'active');
+    silenceTimer = setTimeout(onSilenceTimeout, SILENCE_TIMEOUT);
+  };
+
+  recognition.onresult = (event) => {
+    clearTimeout(silenceTimer);
+    let interim = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      if (event.results[i].isFinal) {
+        accumulatedTranscript += event.results[i][0].transcript + ' ';
+      } else {
+        interim += event.results[i][0].transcript;
+      }
+    }
+    document.getElementById('transcriptPreview').textContent = (accumulatedTranscript + interim).trim() || 'Listening...';
+    silenceTimer = setTimeout(onSilenceTimeout, SILENCE_TIMEOUT);
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech') onSilenceTimeout();
+    else { setStatus('Mic error: ' + e.error, 'error'); sendNow(); }
+  };
+
+  recognition.onend = () => { sendNow(); };
+  recognition.start();
+}
+
+function stopRecording(sendPending) {
+  isRecording = false;
+  clearTimeout(silenceTimer);
+  clearTimeout(sendTimer);
+  document.getElementById('btnMic').classList.remove('recording');
+  document.getElementById('btnMic').textContent = '🎙️';
+  if (recognition) { recognition.onend = null; try { recognition.stop(); } catch(e) {} recognition = null; }
+  if (sendPending && accumulatedTranscript.trim()) {
+    const text = accumulatedTranscript.trim();
+    accumulatedTranscript = '';
+    document.getElementById('transcriptPreview').textContent = text;
+    callAPI(text, false);
+  }
+}
+
+function onSilenceTimeout() {
+  if (isRecording) { accumulatedTranscript = ''; stopRecording(false); callAPI('[SILENCE]', true); }
+}
+
+function requestHelp() {
+  if (!sessionActive) return;
+  if (isRecording) stopRecording(false);
+  addMessage('student', '💡 Help — I\'m stuck!');
+  callAPI('[HELP REQUEST]', true);
+}
+
+function advanceQuestion() {
+  if (currentQuestion < QUESTIONS.length) {
+    currentQuestion++;
+    attemptCount = 0;
+    updateBadge();
+    setTimeout(() => {
+      const nextQ = QUESTIONS[currentQuestion - 1].q;
+      addMessage('tutor', nextQ);
+      speakText(nextQ);
+    }, 800);
+  } else {
+    setTimeout(() => {
+      const doneMsg = '🎉 Excellent! You have completed all questions. Well done!';
+      addMessage('tutor', doneMsg);
+      speakText(doneMsg);
+      setTimeout(showReport, 2500);
+    }, 800);
+  }
+}
+
+async function callAPI(studentText, isSystemMsg) {
+  if (!isSystemMsg) addMessage('student', studentText);
+  setStatus('Tutor is thinking...', 'active');
+  const typingId = addTypingIndicator();
+  const q = QUESTIONS[currentQuestion - 1];
+  const prompt = `QUESTION: ${q.q}\nKEY IDEAS: ${q.keys}\nSTUDENT SAID: ${studentText}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    removeTypingIndicator(typingId);
+
+    if (!res.ok) {
+      const err = data?.error?.message || 'API error';
+      setStatus('Error: ' + err, 'error');
+      addMessage('tutor', '⚠️ ' + err);
+      return;
+    }
+
+    let raw = (data.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
+    let parsed;
+    try { parsed = JSON.parse(raw); }
+    catch(e) { addMessage('tutor', raw); speakText(raw); setStatus('Your turn — press 🎙️', ''); return; }
+
+    const { correct, error_type, correction, message } = parsed;
+    const hasError = error_type && error_type !== 'none';
+
+    if (isSystemMsg) {
+      const tutorText = message + ' ' + q.q;
+      addMessage('tutor', tutorText);
+      speakText(tutorText);
+      setStatus('Your turn — press 🎙️ to speak', '');
+      return;
+    }
+
+    attemptCount++;
+    const canAdvance = correct && !hasError;
+
+    if (canAdvance) {
+      recordResult(currentQuestion - 1, 'correct', attemptCount, '');
+      const praiseText = message;
+      addMessage('tutor', praiseText);
+      speakText(praiseText);
+      setTimeout(() => advanceQuestion(), 1200);
+
+    } else if (attemptCount >= MAX_ATTEMPTS) {
+      // Give model answer and ask to repeat
+      const modelAnswer = MODEL_ANSWERS[currentQuestion - 1];
+      recordResult(currentQuestion - 1, 'given', attemptCount, correction || message);
+      const tutorText = 'Here is the answer: ' + modelAnswer + ' Now say it in your own words.';
+      addMessage('tutor', tutorText);
+      speakText(tutorText);
+      awaitingRepeat = true;
+      setStatus('Your turn — repeat the answer', 'warn');
+
+    } else if (hasError) {
+      recordResult(currentQuestion - 1, 'error', attemptCount, correction);
+      const tutorText = correction + ' ' + q.q;
+      addMessage('tutor', tutorText);
+      speakText(tutorText);
+      setStatus('Your turn — press 🎙️ to speak', '');
+
+    } else {
+      const tutorText = message + ' ' + q.q;
+      addMessage('tutor', tutorText);
+      speakText(tutorText);
+      setStatus('Your turn — press 🎙️ to speak', '');
+    }
+
+  } catch(err) {
+    removeTypingIndicator(typingId);
+    setStatus('Network error: ' + err.message, 'error');
+    addMessage('tutor', '⚠️ Connection error.');
+  }
+}
+
+function recordResult(qIndex, status, attempts, note) {
+  if (!reportData[qIndex] || status === 'correct' || status === 'given') {
+    reportData[qIndex] = { q: QUESTIONS[qIndex].q, status, attempts, note };
+  }
+}
+
+function showReport() {
+  const panel = document.getElementById('reportPanel');
+  const correct = reportData.filter(r => r && r.status === 'correct').length;
+  const total = QUESTIONS.length;
+  const pct = Math.round((correct / total) * 100);
+  let grade = '', gradeColor = '';
+  if (pct >= 90) { grade = 'Excellent'; gradeColor = 'var(--ok)'; }
+  else if (pct >= 70) { grade = 'Good'; gradeColor = 'var(--accent2)'; }
+  else if (pct >= 50) { grade = 'Needs practice'; gradeColor = 'var(--accent2)'; }
+  else { grade = 'Needs revision'; gradeColor = 'var(--danger)'; }
+  const now = new Date().toLocaleString('it-IT');
+  let rows = '';
+  QUESTIONS.forEach((q, i) => {
+    const r = reportData[i];
+    if (!r) return;
+    let badge = '', badgeClass = '';
+    if (r.status === 'correct' && r.attempts === 1) { badge = '✅ 1st attempt'; badgeClass = 'badge-ok'; }
+    else if (r.status === 'correct') { badge = `⚠️ ${r.attempts} attempts`; badgeClass = 'badge-warn'; }
+    else { badge = '❌ Answer given'; badgeClass = 'badge-err'; }
+    rows += `<tr>
+      <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:0.72rem">${i+1}</td>
+      <td>${escapeHtml(q.q)}</td>
+      <td><span class="badge ${badgeClass}">${badge}</span></td>
+      <td style="color:var(--muted);font-size:0.78rem">${r.note ? escapeHtml(r.note) : '—'}</td>
+    </tr>`;
+  });
+  panel.innerHTML = `
+    <h2>Session Report</h2>
+    <div class="report-meta">The Battery · ${now}</div>
+    <div class="report-score">${correct}/${total}</div>
+    <div class="report-grade" style="color:${gradeColor}">${grade} (${pct}%)</div>
+    <table class="report-table">
+      <thead><tr><th>#</th><th>Question</th><th>Result</th><th>Note</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+  `;
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+// SPEECH
+function speakText(text) {
+  if (!('speechSynthesis' in window)) return;
+  const clean = text.replace(/[🎉⚠️💡🎙️⏹️↺]/g, '');
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.lang = 'en-GB'; utter.rate = 0.88; utter.pitch = 1.0;
+  const voices = window.speechSynthesis.getVoices();
+  const voice = voices.find(v => v.lang === 'en-GB' && v.name.includes('Google')) ||
+                voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) ||
+                voices.find(v => v.lang === 'en-GB') ||
+                voices.find(v => v.lang === 'en-US') ||
+                voices.find(v => v.lang.startsWith('en'));
+  if (voice) { utter.voice = voice; utter.lang = voice.lang; }
+  document.getElementById('btnMic').classList.add('disabled');
+  setStatus('Tutor is speaking...', 'warn');
+
+  function enableMic() {
+    document.getElementById('btnMic').classList.remove('disabled');
+    setStatus('Your turn — press 🎙️ to speak', '');
+  }
+
+  const words = clean.split(' ').length;
+  const ms = Math.max(3000, (words / 2.5) * 1000) + 1000;
+  const t = setTimeout(enableMic, ms);
+  utter.onend = () => { clearTimeout(t); enableMic(); };
+  utter.onerror = () => { clearTimeout(t); enableMic(); };
+  window.speechSynthesis.speak(utter);
+}
+window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+
+function addMessage(role, text) {
+  const log = document.getElementById('chatLog');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `<div class="msg-avatar">${role==='tutor'?'T':'S'}</div><div class="msg-bubble">${escapeHtml(text).replace(/\n/g,'<br>')}</div>`;
+  log.appendChild(div); log.scrollTop = log.scrollHeight;
+}
+
+function addTypingIndicator() {
+  const log = document.getElementById('chatLog');
+  const id = 'typing-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'msg tutor'; div.id = id;
+  div.innerHTML = `<div class="msg-avatar">T</div><div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+  log.appendChild(div); log.scrollTop = log.scrollHeight;
+  return id;
+}
+
+function removeTypingIndicator(id) { const el = document.getElementById(id); if (el) el.remove(); }
+function setStatus(msg, type) { const el = document.getElementById('status'); el.textContent = msg; el.className = 'status ' + (type||''); }
+function escapeHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
