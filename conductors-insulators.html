@@ -10,16 +10,18 @@
         h1 { font-size: 20px; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 10px 0; border-bottom: 1px solid #00f3ff; padding-bottom: 10px; }
         #hud { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; color: #888; }
         .stat { color: #00f3ff; font-weight: bold; }
-        #display-screen { background: #020508; border: 1px solid #1a2a3a; padding: 20px; min-height: 150px; margin-bottom: 20px; border-radius: 4px; font-size: 15px; line-height: 1.6; color: #00f3ff; overflow-y: auto; white-space: pre-wrap; }
-        #input-preview { font-size: 13px; color: #7f8c8d; margin-bottom: 20px; font-style: italic; min-height: 20px; border-left: 3px solid #34495e; padding-left: 10px; }
+        #display-screen { background: #020508; border: 1px solid #1a2a3a; padding: 20px; min-height: 160px; margin-bottom: 20px; border-radius: 4px; font-size: 15px; line-height: 1.6; color: #00f3ff; overflow-y: auto; white-space: pre-wrap; }
+        #input-preview { font-size: 14px; color: #fff; background: rgba(255,255,255,0.05); padding: 12px; margin-bottom: 20px; border-radius: 4px; min-height: 35px; border-left: 3px solid #00f3ff; }
         .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        button { background: transparent; border: 1px solid #00f3ff; color: #00f3ff; padding: 12px; font-family: 'Courier New', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        button { background: transparent; border: 1px solid #00f3ff; color: #00f3ff; padding: 15px; font-family: 'Courier New', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
         button:hover:not(:disabled) { background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 10px #00f3ff; }
         button:disabled { border-color: #34495e; color: #34495e; cursor: not-allowed; }
         .btn-main { grid-column: span 2; background: #00f3ff; color: #0a1118; font-size: 16px; }
-        .btn-reset { grid-column: span 2; border: 1px solid #e74c3c; color: #e74c3c; margin-top: 10px; font-size: 11px; }
-        .listening { animation: pulse 1.5s infinite; background: rgba(0, 243, 255, 0.1) !important; }
-        @keyframes pulse { 0% { box-shadow: 0 0 5px #00f3ff; } 50% { box-shadow: 0 0 20px #00f3ff; } 100% { box-shadow: 0 0 5px #00f3ff; } }
+        .btn-speak { background: rgba(0, 243, 255, 0.05); font-size: 16px; }
+        .btn-clear { border-color: #e67e22; color: #e67e22; }
+        .btn-reset { grid-column: span 2; border: none; color: #444; margin-top: 20px; font-size: 10px; text-decoration: underline; }
+        .listening { animation: pulse 1.5s infinite; background: #ff3e3e !important; color: white !important; border-color: #ff3e3e !important; }
+        @keyframes pulse { 0% { box-shadow: 0 0 5px #ff3e3e; } 50% { box-shadow: 0 0 20px #ff3e3e; } 100% { box-shadow: 0 0 5px #ff3e3e; } }
     </style>
 </head>
 <body>
@@ -31,19 +33,20 @@
         <span>Status: <span id="sts" class="stat">OFFLINE</span></span>
     </div>
 
-    <div id="display-screen">SYSTEM STANDBY. Press ACTIVATE MISSION to begin the engineering assessment.</div>
-    <div id="input-preview">Waiting for voice input...</div>
+    <div id="display-screen">SYSTEM STANDBY. Press START to begin.</div>
+    <div id="input-preview">Voice input will appear here...</div>
 
     <div class="grid-buttons">
-        <button id="startBtn" class="btn-main" onclick="startMission()">[ ACTIVATE MISSION ]</button>
-        <button id="micBtn" onclick="toggleMic()" disabled>1. Speak</button>
-        <button id="sendBtn" onclick="sendData()" disabled>2. Send Answer</button>
-        <button class="btn-reset" onclick="location.reload()">ABORT / RESET</button>
+        <button id="startBtn" class="btn-main" onclick="startMission()">[ START MISSION ]</button>
+        <button id="micBtn" class="btn-speak" onclick="toggleMic()" disabled>CLICK TO SPEAK</button>
+        <button id="clearBtn" class="btn-clear" onclick="clearInput()" disabled>CLEAR</button>
+        <button class="btn-reset" onclick="location.reload()">Reset System</button>
     </div>
 </div>
 
 <script>
-    const ENGINE_URL = "https://script.google.com/macros/s/AKfycbwo_a7PgLGBok6xQwbY8zO81EtLsycuQHDFHDqFxRmMiMvH0b52dk9olI5ZkZHVelqs/exec";
+    // NUOVO LINK SCRIPT AGGIORNATO
+    const ENGINE_URL = "https://script.google.com/macros/s/AKfycbwkElaMBTd9K-iGVOqXuH86OII5FdvfNxtxvRDaO-Q_0kW_t96UhvvYXySeVyNjJjgg/exec";
     
     let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-GB';
@@ -64,29 +67,36 @@
 
     function toggleMic() {
         if (!isListening) {
+            document.getElementById('input-preview').innerText = ""; 
             recognition.start();
             isListening = true;
-            document.getElementById('micBtn').innerText = "STOP RECORDING";
+            document.getElementById('micBtn').innerText = "STOP & SEND";
             document.getElementById('micBtn').classList.add('listening');
         } else {
             recognition.stop();
             isListening = false;
-            document.getElementById('micBtn').innerText = "1. SPEAK";
+            document.getElementById('micBtn').innerText = "CLICK TO SPEAK";
             document.getElementById('micBtn').classList.remove('listening');
+            
+            setTimeout(() => {
+                let text = document.getElementById('input-preview').innerText;
+                if (text && text !== "Voice input will appear here...") {
+                    document.getElementById('sts').innerText = "ANALYZING...";
+                    processEngine(text);
+                }
+            }, 500); 
         }
+    }
+
+    function clearInput() {
+        document.getElementById('input-preview').innerText = "";
+        window.speechSynthesis.cancel();
     }
 
     recognition.onresult = (event) => {
         let transcript = event.results[event.results.length - 1][0].transcript;
         document.getElementById('input-preview').innerText = transcript;
     };
-
-    function sendData() {
-        let text = document.getElementById('input-preview').innerText;
-        if (text === "Waiting for voice input..." || text === "") return;
-        document.getElementById('sts').innerText = "ANALYZING...";
-        processEngine(text);
-    }
 
     function processEngine(text) {
         fetch(ENGINE_URL, { method: 'POST', body: JSON.stringify({ testo: text }) })
@@ -96,10 +106,9 @@
             document.getElementById('lvl').innerText = data.level;
             document.getElementById('sts').innerText = data.status.toUpperCase();
             
-            // Effetto visivo per il completamento
             if (data.status === "completed") {
                 document.getElementById('game-terminal').style.borderColor = "#f1c40f";
-                document.getElementById('game-terminal').style.boxShadow = "0 0 30px rgba(241, 196, 15, 0.5)";
+                document.getElementById('game-terminal').style.boxShadow = "0 0 30px rgba(241, 196, 15, 0.4)";
             }
             
             speak(data.text);
@@ -107,7 +116,7 @@
             if (text === "reset") {
                 document.getElementById('startBtn').disabled = true;
                 document.getElementById('micBtn').disabled = false;
-                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('clearBtn').disabled = false;
             }
         });
     }
