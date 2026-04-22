@@ -10,17 +10,19 @@
         body { background: var(--bg-black); color: var(--neon-green); font-family: 'Roboto Mono', monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .terminal { background: rgba(16, 24, 39, 0.95); width: 95%; max-width: 500px; padding: 30px; border: 2px solid var(--neon-green); box-shadow: 0 0 25px rgba(0, 255, 136, 0.3); border-radius: 12px; position: relative; }
         h1 { font-family: 'Orbitron', sans-serif; text-align: center; color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); margin-top: 0; }
-        
         #screen { background: #000; padding: 25px; border-radius: 8px; min-height: 180px; margin-bottom: 20px; border: 1px solid #333; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; line-height: 1.4; }
-        
-        /* Bottone Start Iniziale */
         #start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-black); display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 12px; z-index: 10; }
         .btn-big-start { padding: 20px 40px; font-size: 2rem; font-family: 'Orbitron'; background: var(--neon-green); color: #000; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0 20px var(--neon-green); }
-        .btn-big-start:hover { transform: scale(1.1); }
+        
+        .input-container { position: relative; display: flex; align-items: center; margin-bottom: 15px; }
+        input { width: 100%; padding: 16px; padding-right: 60px; background: #000; border: 1.5px solid var(--neon-green); color: var(--neon-blue); border-radius: 6px; font-size: 1.2rem; outline: none; text-align: center; font-family: inherit; }
+        
+        /* Tasto cancella singola parola */
+        .btn-clear { position: absolute; right: 10px; background: #1a202c; border: 1px solid #ff4444; color: #ff4444; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; }
+        .btn-clear:hover { background: #ff4444; color: #fff; }
 
-        input { width: 100%; padding: 16px; background: #000; border: 1.5px solid var(--neon-green); color: var(--neon-blue); border-radius: 6px; font-size: 1.2rem; box-sizing: border-box; margin-bottom: 15px; outline: none; text-align: center; font-family: inherit; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        button { padding: 16px; border: none; border-radius: 6px; font-family: 'Orbitron', sans-serif; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        button { padding: 16px; border: none; border-radius: 6px; font-family: 'Orbitron', sans-serif; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-send { background: var(--neon-green); color: #000; }
         .btn-mic { background: transparent; color: var(--neon-blue); border: 2px solid var(--neon-blue); }
         .listening { background: #ff4444 !important; color: white !important; border-color: #ff4444 !important; }
@@ -31,14 +33,16 @@
 <div class="terminal">
     <div id="start-overlay">
         <button class="btn-big-start" onclick="initGame()">START MISSION</button>
-        <p style="margin-top: 20px; font-size: 0.8rem;">CLICK TO INITIALIZE VOICE SYSTEM</p>
     </div>
 
     <h1>> TECH_QUEST_</h1>
     <div id="screen">SYSTEM READY...</div>
     
-    <input type="text" id="user-input" placeholder="Awaiting command..." autofocus>
-    
+    <div class="input-container">
+        <input type="text" id="user-input" placeholder="Trascrizione..." autofocus>
+        <button class="btn-clear" onclick="backspace()" title="Cancella parola">DEL</button>
+    </div>
+
     <div class="grid">
         <button class="btn-send" onclick="send()">[SEND / INVIO]</button>
         <button class="btn-mic" id="mic-btn">[VOICE OFF]</button>
@@ -54,42 +58,45 @@
     
     let isAutoMic = true;
 
+    // Funzione per cancellare l'ultima parola
+    function backspace() {
+        let words = input.value.trim().split(" ");
+        words.pop(); 
+        input.value = words.join(" ");
+    }
+
     function speak(text, callback) {
         window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(text.replace(/[❌✅🚀🏁🎊]/g, ''));
-        msg.lang = 'en-US';
+        let cleanText = text.replace(/[-_*🚀✅❌🏁🎊]/g, ' ').replace(/\s+/g, ' ').trim();
+        const msg = new SpeechSynthesisUtterance(cleanText);
+        const voices = window.speechSynthesis.getVoices();
+        const britishVoice = voices.find(v => v.lang === 'en-GB' || v.lang.includes('GB'));
+        if (britishVoice) msg.voice = britishVoice;
+        msg.lang = 'en-GB';
+        msg.rate = 0.9;
         msg.onend = () => { if(callback) callback(); };
         window.speechSynthesis.speak(msg);
     }
 
-    // Funzione che parte al click sul bottone gigante
     function initGame() {
-        overlay.style.display = 'none'; // Rimuove il bottone
-        speak("System online. Welcome agent. Initializing mission.", () => {
-            send("start"); // Invia automaticamente il comando start
-        });
+        overlay.style.display = 'none';
+        window.speechSynthesis.getVoices();
+        speak("System online. Welcome agent. Initializing level one.", () => { send("start"); });
     }
 
     async function send(val) {
         let text = val || input.value.trim();
         if(!text) return;
-
         let apiText = text.toLowerCase() === "start" ? "reset" : text;
-        screen.innerText = "WAITING FOR RESPONSE...";
+        screen.innerText = "QUERYING CORE...";
         input.value = ""; 
 
         try {
             const r = await fetch(url + "?testo=" + encodeURIComponent(apiText));
             const d = await r.json();
             screen.innerHTML = d.text.replace(/\n/g, "<br>");
-            
-            speak(d.text, () => {
-                if(isAutoMic) startListening();
-            });
-            
-        } catch(e) {
-            screen.innerText = "CONNECTION ERROR.";
-        }
+            speak(d.text, () => { if(isAutoMic) startListening(); });
+        } catch(e) { screen.innerText = "CONNECTION ERROR."; }
     }
 
     const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -97,7 +104,8 @@
     rec.interimResults = true;
 
     rec.onresult = (e) => {
-        input.value = e.results[0][0].transcript; // TRASCRIVE MA NON INVIA
+        let transcript = e.results[0][0].transcript;
+        input.value = transcript; 
     };
 
     rec.onend = () => {
@@ -118,6 +126,7 @@
     };
 
     input.onkeypress = (e) => { if(e.key === 'Enter') send(); };
+    window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
 </script>
 </body>
 </html>
