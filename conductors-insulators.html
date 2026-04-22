@@ -2,41 +2,244 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Electrical English Tutor</title>
+    <title>Tech English Quest</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        #display-text { font-size: 1.2rem; margin: 20px 0; min-height: 100px; color: #2c3e50; white-space: pre-wrap; line-height: 1.5; }
-        #user-echo { font-style: italic; color: #95a5a6; margin-bottom: 15px; min-height: 1.2rem; font-size: 0.9rem; }
-        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; margin-bottom: 15px; box-sizing: border-box; }
-        .controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        button { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 1rem; }
-        .btn-send { background: #27ae60; color: white; flex-grow: 1; }
-        .btn-mic { background: #3498db; color: white; flex-grow: 1; }
-        .btn-reset { background: transparent; color: #e74c3c; font-size: 0.8rem; text-decoration: underline; border: none; cursor: pointer; }
-        button:hover { opacity: 0.8; transform: translateY(-2px); }
-        .status-wrong { color: #e74c3c; }
+        :root {
+            --primary: #00ff88; /* Verde Neon */
+            --secondary: #00bcd4; /* Blu Cyan */
+            --bg-dark: #0a0e17; /* Sfondo quasi nero */
+            --card-bg: rgba(16, 24, 39, 0.9); /* Sfondo scheda trasparente */
+            --text: #e0e6ed;
+            --glow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+
+        body { 
+            font-family: 'Roboto Mono', monospace; 
+            background-color: var(--bg-dark);
+            /* Sfondo spaziale sottile */
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            color: var(--text);
+        }
+
+        .game-container { 
+            background: var(--card-bg); 
+            width: 90%; 
+            max-width: 550px; 
+            padding: 30px; 
+            border-radius: 12px; 
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.2); 
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effetto Scanline olografico */
+        .game-container::before {
+            content: " ";
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+
+        h1 { 
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary); 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: var(--glow);
+        }
+
+        #display-text { 
+            font-size: 1.2rem; 
+            margin: 25px 0; 
+            min-height: 140px; 
+            color: var(--text); 
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            white-space: pre-wrap;
+            position: relative;
+        }
+
+        /* Mostra il livello corrente */
+        #display-text::before {
+            content: "SYSTEM MESSAGE //";
+            position: absolute;
+            top: 5px; left: 10px;
+            font-size: 0.7rem;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        #user-echo { 
+            font-size: 0.9rem; 
+            color: #888; 
+            margin-top: -15px; 
+            margin-bottom: 25px;
+            min-height: 1.3rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .input-group { margin-bottom: 25px; position: relative; }
+        
+        input { 
+            width: 100%; 
+            padding: 18px; 
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #333; 
+            border-radius: 6px; 
+            font-size: 1.1rem; 
+            color: var(--secondary);
+            font-family: 'Roboto Mono', monospace;
+            box-sizing: border-box;
+            transition: all 0.3s;
+            outline: none;
+        }
+        input:focus { 
+            border-color: var(--secondary); 
+            box-shadow: 0 0 15px rgba(0, 188, 212, 0.4); 
+        }
+        
+        /* Controlli di Gioco */
+        .controls { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+        }
+        
+        button { 
+            padding: 16px; 
+            border: none; 
+            border-radius: 6px; 
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Effetto Glitch al passaggio del mouse */
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-send { 
+            background: var(--primary); 
+            color: #052c1a; 
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+        .btn-send:hover { 
+            background: #00e67a; 
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+        }
+        
+        .btn-mic { 
+            background: #121926; 
+            color: var(--secondary); 
+            border: 2px solid var(--secondary);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
+        }
+        .btn-mic:hover { 
+            background: rgba(0, 188, 212, 0.1); 
+            box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+        }
+        
+        /* Pulsante Reset stile "Autodistruzione" */
+        .btn-reset { 
+            background: none; 
+            color: #555; 
+            font-size: 0.8rem; 
+            margin-top: 30px; 
+            text-decoration: none; 
+            border: 1px solid transparent;
+            padding: 8px;
+            width: 100%;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .btn-reset:hover { 
+            color: #e53e3e;
+            border-color: rgba(229, 62, 62, 0.5); 
+            border-radius: 4px;
+            background: rgba(229, 62, 62, 0.05);
+        }
+        
+        /* Classi di stato per il testo */
+        .status-correct { 
+            color: var(--primary) !important; 
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.7);
+        }
+        .status-wrong { 
+            color: #e53e3e !important; 
+            text-shadow: 0 0 10px rgba(229, 62, 62, 0.7);
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div id="display-text">Type "reset" to start the mission.</div>
+<div class="game-container">
+    <h1>> TECH QUEST_</h1>
+    <div id="display-text">INITIALIZING...<br>Type "reset" to begin the simulation.</div>
     <div id="user-echo"></div>
     
-    <input type="text" id="user-input" placeholder="Type or click Speak...">
+    <div class="input-group">
+        <input type="text" id="user-input" placeholder="Enter command or answer...">
+    </div>
     
     <div class="controls">
-        <button class="btn-send" onclick="processInput()">SEND</button>
-        <button class="btn-mic" id="mic-btn">🎤 SPEAK</button>
+        <button class="btn-send" onclick="processInput()">
+            [ ➤ ] SEND
+        </button>
+        <button class="btn-mic" id="mic-btn">
+            [ 🎤 ] SPEAK
+        </button>
     </div>
 
-    <button class="btn-reset" onclick="resetGame()">Reset Progress</button>
+    <button class="btn-reset" onclick="resetGame()">Abort Mission (Reset)</button>
 </div>
 
 <script>
-    // IL TUO LINK AGGIORNATO
+    // Il tuo link Google Script invariato
     const scriptURL = "https://script.google.com/macros/s/AKfycbzqN5conrnr6mI1vzlts_dPIde3LMuNc6jjLvYaqasFWsnpFYtkHrMzgb7wkgPj7zSl/exec";
     
     const inputField = document.getElementById("user-input");
@@ -47,49 +250,30 @@
         const val = forcedValue || inputField.value.trim();
         if(!val) return;
         
-        userEcho.innerText = "You said: " + val;
-        displayText.innerText = "Checking...";
+        // Suono di invio (opzionale, se hai un file audio)
+        // new Audio('send.mp3').play();
+
+        userEcho.innerText = ">> LAST INPUT: " + val;
+        displayText.innerText = "DOWNLOADING DATA...";
         inputField.value = ""; 
 
         try {
             const res = await fetch(scriptURL + "?testo=" + encodeURIComponent(val));
             const data = await res.json();
             
-            // Gestione della risposta
-            displayText.innerText = data.text;
+            // Applichiamo il testo con formattazione
+            displayText.innerHTML = data.text;
             
-            // Feedback visuale se sbagliato
-            if(data.text.includes("❌")) {
-                displayText.style.color = "#e74c3c";
+            // Feedback visivo dinamico
+            if(data.text.includes("❌") || data.text.includes("Wrong")) {
+                displayText.className = "status-wrong";
+                // new Audio('error.mp3').play(); // Suono errore
+            } else if(data.text.includes("✅") || data.text.includes("Correct") || data.text.includes("!")) {
+                displayText.className = "status-correct";
+                // new Audio('success.mp3').play(); // Suono successo
             } else {
-                displayText.style.color = "#2c3e50";
+                displayText.className = "";
             }
         } catch(e) {
-            displayText.innerText = "Connection error. Please try again.";
+            displayText.innerText = ">> ERROR: Connection unstable.";
         }
-    }
-
-    function resetGame() {
-        if(confirm("Do you want to restart from Level 1?")) {
-            processInput("reset");
-        }
-    }
-
-    // Speech Recognition Setup
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'en-US';
-    
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        processInput(transcript); 
-    };
-
-    document.getElementById("mic-btn").onclick = () => {
-        recognition.start();
-        displayText.innerText = "Listening...";
-    };
-
-    inputField.onkeypress = (e) => { if(e.key === 'Enter') processInput(); };
-</script>
-</body>
-</html>
