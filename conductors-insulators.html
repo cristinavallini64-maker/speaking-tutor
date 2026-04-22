@@ -43,8 +43,8 @@
 </div>
 
 <script>
-    // URL AGGIORNATO CON IL TUO NUOVO LINK
-    const ENGINE_URL = "https://script.google.com/macros/s/AKfycbz-1XNa4TVQqfCbtbQAMM6xH7oRq6Zk_sb3DB0-vdNJ8nyN_ClYz9P4r691LNVF2Ko-/exec";
+    // URL DEL TUO SCRIPT AGGIORNATO
+    const ENGINE_URL = "https://script.google.com/macros/s/AKfycbwo_a7PgLGBok6xQwbY8zO81EtLsycuQHDFHDqFxRmMiMvH0b52dk9olI5ZkZHVelqs/exec";
     
     let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-GB';
@@ -54,8 +54,8 @@
 
     function loadVoices() {
         let voices = window.speechSynthesis.getVoices();
-        // Cerchiamo una voce britannica
-        britishVoice = voices.find(v => v.lang === 'en-GB' && (v.name.includes('UK') || v.name.includes('Female') || v.name.includes('Google')));
+        // Cerchiamo una voce britannica maschile o femminile per il tono "Engineer"
+        britishVoice = voices.find(v => v.lang === 'en-GB' && (v.name.includes('UK') || v.name.includes('Google')));
     }
     window.speechSynthesis.onvoiceschanged = loadVoices;
 
@@ -106,8 +106,8 @@
             }
         })
         .catch(err => {
-            document.getElementById('display-screen').innerText = "ERROR: Connection failed. Check Script permissions.";
-            document.getElementById('sts').innerText = "ERROR";
+            document.getElementById('display-screen').innerText = "CONNECTION ERROR. Verify Google Script deployment.";
+            document.getElementById('sts').innerText = "OFFLINE";
         });
     }
 
@@ -116,7 +116,7 @@
         let msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'en-GB';
         if (britishVoice) msg.voice = britishVoice;
-        msg.pitch = 1;
+        msg.pitch = 0.9;
         msg.rate = 0.9;
         window.speechSynthesis.speak(msg);
     }
