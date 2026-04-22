@@ -6,11 +6,11 @@
     <title>Engineer Challenge: Technical English</title>
     <style>
         body { margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; background: #05080a; color: #00f3ff; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #game-terminal { width: 550px; background: #0a1118; border: 2px solid #00f3ff; border-radius: 5px; padding: 25px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); }
+        #game-terminal { width: 550px; background: #0a1118; border: 2px solid #00f3ff; border-radius: 5px; padding: 25px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); transition: all 0.5s ease; }
         h1 { font-size: 20px; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 10px 0; border-bottom: 1px solid #00f3ff; padding-bottom: 10px; }
         #hud { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; color: #888; }
         .stat { color: #00f3ff; font-weight: bold; }
-        #display-screen { background: #020508; border: 1px solid #1a2a3a; padding: 20px; min-height: 130px; margin-bottom: 20px; border-radius: 4px; font-size: 16px; line-height: 1.5; color: #00f3ff; overflow-y: auto; }
+        #display-screen { background: #020508; border: 1px solid #1a2a3a; padding: 20px; min-height: 150px; margin-bottom: 20px; border-radius: 4px; font-size: 15px; line-height: 1.6; color: #00f3ff; overflow-y: auto; white-space: pre-wrap; }
         #input-preview { font-size: 13px; color: #7f8c8d; margin-bottom: 20px; font-style: italic; min-height: 20px; border-left: 3px solid #34495e; padding-left: 10px; }
         .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         button { background: transparent; border: 1px solid #00f3ff; color: #00f3ff; padding: 12px; font-family: 'Courier New', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
@@ -31,7 +31,7 @@
         <span>Status: <span id="sts" class="stat">OFFLINE</span></span>
     </div>
 
-    <div id="display-screen">SYSTEM STANDBY. Press ACTIVATE MISSION to begin the engineering test.</div>
+    <div id="display-screen">SYSTEM STANDBY. Press ACTIVATE MISSION to begin the engineering assessment.</div>
     <div id="input-preview">Waiting for voice input...</div>
 
     <div class="grid-buttons">
@@ -43,7 +43,6 @@
 </div>
 
 <script>
-    // URL DEL TUO SCRIPT AGGIORNATO
     const ENGINE_URL = "https://script.google.com/macros/s/AKfycbwo_a7PgLGBok6xQwbY8zO81EtLsycuQHDFHDqFxRmMiMvH0b52dk9olI5ZkZHVelqs/exec";
     
     let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -54,7 +53,6 @@
 
     function loadVoices() {
         let voices = window.speechSynthesis.getVoices();
-        // Cerchiamo una voce britannica maschile o femminile per il tono "Engineer"
         britishVoice = voices.find(v => v.lang === 'en-GB' && (v.name.includes('UK') || v.name.includes('Google')));
     }
     window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -97,6 +95,13 @@
             document.getElementById('display-screen').innerText = data.text;
             document.getElementById('lvl').innerText = data.level;
             document.getElementById('sts').innerText = data.status.toUpperCase();
+            
+            // Effetto visivo per il completamento
+            if (data.status === "completed") {
+                document.getElementById('game-terminal').style.borderColor = "#f1c40f";
+                document.getElementById('game-terminal').style.boxShadow = "0 0 30px rgba(241, 196, 15, 0.5)";
+            }
+            
             speak(data.text);
 
             if (text === "reset") {
@@ -104,10 +109,6 @@
                 document.getElementById('micBtn').disabled = false;
                 document.getElementById('sendBtn').disabled = false;
             }
-        })
-        .catch(err => {
-            document.getElementById('display-screen').innerText = "CONNECTION ERROR. Verify Google Script deployment.";
-            document.getElementById('sts').innerText = "OFFLINE";
         });
     }
 
@@ -116,7 +117,7 @@
         let msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'en-GB';
         if (britishVoice) msg.voice = britishVoice;
-        msg.pitch = 0.9;
+        msg.pitch = 0.95;
         msg.rate = 0.9;
         window.speechSynthesis.speak(msg);
     }
