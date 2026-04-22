@@ -1,138 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engineering Technical English Challenge</title>
+    <title>Tech English Tutor - Electricity</title>
     <style>
-        body { margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; background: #05080a; color: #00f3ff; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #game-terminal { width: 580px; background: #0a1118; border: 2px solid #00f3ff; border-radius: 5px; padding: 25px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); transition: all 0.5s ease; }
-        h1 { font-size: 18px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 10px 0; border-bottom: 1px solid #00f3ff; padding-bottom: 10px; color: #00f3ff; }
-        #hud { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; color: #888; }
-        .stat { color: #00f3ff; font-weight: bold; }
-        #display-screen { background: #020508; border: 1px solid #1a2a3a; padding: 20px; min-height: 200px; margin-bottom: 20px; border-radius: 4px; font-size: 15px; line-height: 1.6; color: #00f3ff; overflow-y: auto; white-space: pre-wrap; }
-        #input-preview { font-size: 14px; color: #fff; background: rgba(255,255,255,0.05); padding: 12px; margin-bottom: 20px; border-radius: 4px; min-height: 40px; border-left: 3px solid #00f3ff; }
-        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        button { background: transparent; border: 1px solid #00f3ff; color: #00f3ff; padding: 15px; font-family: 'Courier New', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 3px; }
-        button:hover:not(:disabled) { background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 10px #00f3ff; }
-        button:disabled { border-color: #34495e; color: #34495e; cursor: not-allowed; }
-        .btn-main { grid-column: span 2; background: #00f3ff; color: #0a1118; font-size: 16px; border: none; }
-        .btn-speak { background: rgba(0, 243, 255, 0.05); font-size: 15px; }
-        .btn-clear { border-color: #e67e22; color: #e67e22; }
-        .btn-reset { grid-column: span 2; border: none; color: #444; margin-top: 20px; font-size: 10px; text-decoration: underline; background: transparent; }
-        .listening { animation: pulse 1.5s infinite; background: #ff3e3e !important; color: white !important; border-color: #ff3e3e !important; }
-        @keyframes pulse { 0% { box-shadow: 0 0 5px #ff3e3e; } 50% { box-shadow: 0 0 15px #ff3e3e; } 100% { box-shadow: 0 0 5px #ff3e3e; } }
+        :root {
+            --lvl1: #3498db; --lvl2: #f1c40f; --lvl3: #e67e22; --bg: #f4f7f6;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        #badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; margin-bottom: 1rem; text-transform: uppercase; font-size: 0.8rem; }
+        .lvl-1 { background-color: var(--lvl1); }
+        .lvl-2 { background-color: var(--lvl2); color: #333 !important; }
+        .lvl-3 { background-color: var(--lvl3); }
+        #display-text { font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem; white-space: pre-wrap; min-height: 100px; }
+        input { width: 80%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none; transition: 0.3s; }
+        input:focus { border-color: #3498db; }
+        button { padding: 12px 25px; background: #2ecc71; border: none; color: white; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 10px; transition: 0.3s; }
+        button:hover { background: #27ae60; }
+        .status-wrong { color: #e74c3c; font-weight: bold; }
+        .status-correct { color: #2ecc71; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="game-terminal">
-    <h1>Technical Assessment</h1>
-    <div id="hud">
-        <span>Level: <span id="lvl" class="stat">0</span></span>
-        <span>Status: <span id="sts" class="stat">OFFLINE</span></span>
-    </div>
-
-    <div id="display-screen">SYSTEM READY. Press START MISSION to begin.</div>
-    <div id="input-preview">Voice input will appear here...</div>
-
-    <div class="grid-buttons">
-        <button id="startBtn" class="btn-main" onclick="startMission()">[ START MISSION ]</button>
-        <button id="micBtn" class="btn-speak" onclick="toggleMic()" disabled>CLICK TO SPEAK</button>
-        <button id="clearBtn" class="btn-clear" onclick="clearInput()" disabled>CLEAR</button>
-        <button class="btn-reset" onclick="location.reload()">Reset System</button>
-    </div>
+<div class="card">
+    <div id="badge" class="lvl-1">Level 1: Vocabulary</div>
+    <div id="display-text">Caricamento missione...<br>Scrivi "reset" per iniziare.</div>
+    <input type="text" id="user-input" placeholder="Scrivi la tua risposta..." onkeypress="if(event.key==='Enter') sendData()">
+    <br>
+    <button onclick="sendData()">Invia Risposta</button>
 </div>
 
 <script>
-    // IL TUO LINK AGGIORNATO
-    const ENGINE_URL = "https://script.google.com/macros/s/AKfycbzDACp8rHK3-yVhoKPVwh3xCsxG52kX_M2TWLVYip6ncXn0KSjMioATrbz__lN_2OL9/exec";
-    
-    let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'en-GB';
-    recognition.continuous = true;
-    let isListening = false;
-    let britishVoice = null;
+    // URL DEL TUO SCRIPT (VERIFICATO)
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwsBiVsAhgpjrZCOORKVhJnXLBiqWHYEZsGdhp3PRGAjYQTBjPIYK1mgbcf4XzObVlm/exec";
 
-    function loadVoices() {
-        let voices = window.speechSynthesis.getVoices();
-        britishVoice = voices.find(v => v.lang === 'en-GB' && (v.name.includes('Google') || v.name.includes('UK')));
-    }
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+    async function sendData() {
+        const inputField = document.getElementById("user-input");
+        const displayText = document.getElementById("display-text");
+        const badge = document.getElementById("badge");
+        const val = inputField.value.trim();
+        
+        if (!val) return;
+        
+        displayText.innerHTML = "Pensando...";
+        inputField.value = "";
 
-    function startMission() {
-        document.getElementById('sts').innerText = "CONNECTING...";
-        processEngine("reset");
-    }
+        try {
+            const response = await fetch(scriptURL, {
+                method: "POST",
+                mode: "no-cors", // Necessario per Google Apps Script
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ testo: val })
+            });
 
-    function toggleMic() {
-        if (!isListening) {
-            document.getElementById('input-preview').innerText = ""; 
-            recognition.start();
-            isListening = true;
-            document.getElementById('micBtn').innerText = "STOP & SEND";
-            document.getElementById('micBtn').classList.add('listening');
-        } else {
-            recognition.stop();
-            isListening = false;
-            document.getElementById('micBtn').innerText = "CLICK TO SPEAK";
-            document.getElementById('micBtn').classList.remove('listening');
+            // Poiché usiamo no-cors, dobbiamo attendere un secondo e poi resettare 
+            // o gestire la risposta tramite una chiamata GET di controllo se necessario.
+            // TUTTAVIA, per un gioco semplice, la logica migliore è usare un bot push.
             
-            setTimeout(() => {
-                let text = document.getElementById('input-preview').innerText;
-                if (text && text !== "Voice input will appear here...") {
-                    document.getElementById('sts').innerText = "ANALYZING...";
-                    processEngine(text);
-                }
-            }, 600); 
+            // NOTA: Per leggere la risposta da Apps Script "no-cors", 
+            // la soluzione più stabile è usare JSONP o cambiare l'approccio fetch.
+            // Ecco la versione corretta per leggere i dati:
+            
+            fetch(scriptURL + "?testo=" + encodeURIComponent(val))
+                .then(res => res.json())
+                .then(data => {
+                    displayText.innerHTML = data.text;
+                    badge.innerText = "Level " + data.level + (data.level == 1 ? ": Vocabulary" : data.level == 2 ? ": Comprehension" : ": Connectors");
+                    badge.className = "lvl-" + data.level;
+                    
+                    if(data.status === "wrong") displayText.classList.add("status-wrong");
+                    else displayText.classList.remove("status-wrong");
+                });
+
+        } catch (e) {
+            displayText.innerHTML = "Errore di connessione. Riprova.";
         }
-    }
-
-    function clearInput() {
-        document.getElementById('input-preview').innerText = "";
-        window.speechSynthesis.cancel();
-    }
-
-    recognition.onresult = (event) => {
-        let transcript = event.results[event.results.length - 1][0].transcript;
-        document.getElementById('input-preview').innerText = transcript;
-    };
-
-    function processEngine(text) {
-        fetch(ENGINE_URL, { method: 'POST', body: JSON.stringify({ testo: text }) })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('display-screen').innerText = data.text;
-            document.getElementById('lvl').innerText = data.level;
-            document.getElementById('sts').innerText = data.status.toUpperCase();
-            
-            if (data.status === "completed") {
-                document.getElementById('game-terminal').style.borderColor = "#f1c40f";
-                document.getElementById('game-terminal').style.boxShadow = "0 0 30px rgba(241, 196, 15, 0.4)";
-                document.getElementById('micBtn').disabled = true;
-            }
-            
-            speak(data.text);
-
-            if (text === "reset") {
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('micBtn').disabled = false;
-                document.getElementById('clearBtn').disabled = false;
-            }
-        })
-        .catch(err => {
-            document.getElementById('display-screen').innerText = "CONNECTION ERROR.";
-        });
-    }
-
-    function speak(text) {
-        window.speechSynthesis.cancel();
-        let msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'en-GB';
-        if (britishVoice) msg.voice = britishVoice;
-        msg.pitch = 1.0;
-        msg.rate = 0.95;
-        window.speechSynthesis.speak(msg);
     }
 </script>
 
