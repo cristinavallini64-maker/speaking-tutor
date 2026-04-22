@@ -21,18 +21,18 @@
   .msg { padding: 10px 14px; border-radius: 10px; font-size: 14px; max-width: 85%; line-height: 1.5; }
   .tutor { background: #1c2128; align-self: flex-start; border-left: 3px solid var(--accent); }
   .student { background: #0d2137; align-self: flex-end; border-right: 3px solid var(--accent); }
-  #transcript-box { width: 100%; max-width: 740px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px; min-height: 60px; margin-bottom: 12px; color: var(--muted); font-style: italic; }
+  #transcript-box { width: 100%; max-width: 740px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px; min-height: 60px; margin-bottom: 12px; color: var(--text); font-style: italic; }
   .controls { width: 100%; max-width: 740px; display: flex; gap: 10px; }
   .btn { flex: 1; padding: 13px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; text-transform: uppercase; }
   #btn-talk { background: var(--red); color: white; flex: 2; }
   #btn-send { background: var(--accent); color: #0d1117; }
-  #btn-retry { background: var(--orange); color: #0d1117; display: none; } 
+  #btn-reset { background: var(--border); color: white; }
 </style>
 </head>
 <body>
 
 <div id="start-screen">
-  <button id="start-btn">START SESSION</button>
+  <button id="start-btn">START PRACTICE</button>
 </div>
 
 <header>
@@ -52,11 +52,12 @@
 
 <div class="controls">
   <button class="btn" id="btn-talk">🎤 TALK</button>
+  <button class="btn" id="btn-reset">✖ RESET</button>
   <button class="btn" id="btn-send" disabled>SEND ➜</button>
-  <button class="btn" id="btn-retry">🔄 RETRY SEND</button>
 </div>
 
 <script>
+// URL CHE HAI APPENA TESTATO E FUNZIONA
 const PROXY_URL = 'https://script.google.com/macros/s/AKfycby_f17Z1GMj1K-K62PThg1ZT4RGaNO0mwO2S1DJOu8wJvULI6NcPEm1YRviXYykUvs7/exec';
 
 const QUESTIONS = {
@@ -68,8 +69,9 @@ const QUESTIONS = {
 
 let currentLevel = 1;
 let currentQIndex = 0;
-let recognition;
 let lastTranscript = "";
+let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+recognition.lang = 'en-US';
 
 function speak(text) {
   window.speechSynthesis.cancel();
@@ -79,16 +81,11 @@ function speak(text) {
   window.speechSynthesis.speak(utter);
 }
 
-if ('webkitSpeechRecognition' in window) {
-  recognition = new webkitSpeechRecognition();
-  recognition.lang = 'en-US';
-  recognition.onresult = (e) => {
-    lastTranscript = e.results[0][0].transcript;
-    document.getElementById('transcript-box').innerText = lastTranscript;
-    document.getElementById('btn-send').disabled = false;
-    document.getElementById('btn-talk').style.background = 'var(--red)';
-  };
-}
+recognition.onresult = (e) => {
+  lastTranscript = e.results[0][0].transcript;
+  document.getElementById('transcript-box').innerText = lastTranscript;
+  document.getElementById('btn-send').disabled = false;
+};
 
 document.getElementById('start-btn').onclick = () => {
   document.getElementById('start-screen').style.display = 'none';
@@ -97,21 +94,20 @@ document.getElementById('start-btn').onclick = () => {
 
 document.getElementById('btn-talk').onclick = () => {
   recognition.start();
-  document.getElementById('btn-talk').style.background = 'var(--green)';
   document.getElementById('transcript-box').innerText = "Listening...";
 };
 
+document.getElementById('btn-reset').onclick = () => {
+  lastTranscript = "";
+  document.getElementById('transcript-box').innerText = "Cleared. Click TALK to try again.";
+  document.getElementById('btn-send').disabled = true;
+};
+
 async function sendMessage() {
-  if (!lastTranscript || lastTranscript === "Listening...") return;
-  
-  const isRetry = document.getElementById('btn-retry').style.display === 'block';
-  if (!isRetry) addMessage('student', lastTranscript);
-  
+  addMessage('student', lastTranscript);
   const q = QUESTIONS[currentLevel][currentQIndex];
-  
-  document.getElementById('btn-send').style.display = 'none';
-  document.getElementById('btn-retry').style.display = 'none';
-  document.getElementById('transcript-box').innerText = "Connecting to Tutor...";
+  document.getElementById('btn-send').disabled = true;
+  document.getElementById('transcript-box').innerText = "Thinking...";
 
   try {
     const response = await fetch(PROXY_URL, {
@@ -120,17 +116,10 @@ async function sendMessage() {
     });
     const reply = await response.text();
     
-    // Se la risposta è un errore di chiavi
-    if (reply.includes("busy") || reply.includes("wait") || reply.includes("limit")) {
-        addMessage('tutor', "System busy. Click RETRY to send again.");
-        speak("System busy. Please try again.");
-        document.getElementById('btn-retry').style.display = 'block';
-        document.getElementById('transcript-box').innerText = "Waiting for retry...";
-    } else {
-        // RISPOSTA OK
-        addMessage('tutor', reply);
-        speak(reply);
-        
+    addMessage('tutor', reply);
+    speak(reply);
+
+    if (!reply.includes("busy")) {
         currentQIndex++;
         if (currentQIndex < QUESTIONS[currentLevel].length) {
           setTimeout(askQuestion, 2500);
@@ -138,18 +127,15 @@ async function sendMessage() {
           currentLevel++; currentQIndex = 0;
           addMessage('tutor', "Level Up!");
           setTimeout(askQuestion, 3000);
-        } else {
-          addMessage('tutor', "Well done! Practice finished.");
         }
     }
   } catch (e) {
-    addMessage('tutor', "Connection error.");
-    document.getElementById('btn-retry').style.display = 'block';
+    addMessage('tutor', "Error. Please try again.");
+    document.getElementById('btn-send').disabled = false;
   }
 }
 
 document.getElementById('btn-send').onclick = sendMessage;
-document.getElementById('btn-retry').onclick = sendMessage;
 
 function askQuestion() {
   const q = QUESTIONS[currentLevel][currentQIndex];
@@ -157,10 +143,7 @@ function askQuestion() {
   speak(q);
   lastTranscript = "";
   document.getElementById('transcript-box').innerText = "Click 'TALK' to record...";
-  document.getElementById('btn-send').style.display = 'block';
   document.getElementById('btn-send').disabled = true;
-  document.getElementById('btn-retry').style.display = 'none';
-  
   document.querySelectorAll('.level-pip').forEach(p => p.classList.remove('active'));
   document.getElementById(`pip-${currentLevel}`).classList.add('active');
 }
