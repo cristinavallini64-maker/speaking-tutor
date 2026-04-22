@@ -1,106 +1,107 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tutor: Conductors and Insulators</title>
+    <title>Technical English Tutor</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 40px; background-color: #f0f4f8; color: #333; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; margin-bottom: 10px; }
-        p { color: #7f8c8d; margin-bottom: 25px; }
-        #status { font-weight: bold; color: #3498db; margin-bottom: 15px; height: 20px; }
-        #transcript { border: 2px dashed #bdc3c7; padding: 20px; min-height: 80px; margin: 20px 0; border-radius: 10px; background: #fafafa; font-size: 1.1rem; line-height: 1.5; }
-        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-        button { padding: 12px 24px; font-size: 1rem; font-weight: bold; cursor: pointer; border-radius: 8px; border: none; transition: all 0.3s ease; }
-        .btn-mic { background-color: #27ae60; color: white; }
-        .btn-mic:hover { background-color: #2ecc71; }
-        .btn-send { background-color: #2980b9; color: white; }
-        .btn-send:hover { background-color: #3498db; }
-        .btn-reset { background-color: #c0392b; color: white; }
-        .btn-reset:hover { background-color: #e74c3c; }
-        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7f6; }
+        .tutor-card { width: 450px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        h1 { font-size: 24px; color: #333; margin-bottom: 5px; }
+        .subtitle { font-size: 14px; color: #888; margin-bottom: 25px; }
+        #status { font-size: 14px; font-weight: bold; color: #2980b9; margin-bottom: 10px; min-height: 20px; }
+        #transcript { border: 1px solid #ddd; border-radius: 8px; padding: 15px; min-height: 80px; margin-bottom: 20px; background: #fafafa; font-size: 16px; color: #444; }
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; font-size: 13px; text-transform: uppercase; }
+        button:hover { opacity: 0.9; }
+        .btn-start { background: #2c3e50; color: white; grid-column: span 2; margin-bottom: 10px; }
+        .btn-mic { background: #27ae60; color: white; }
+        .btn-send { background: #2980b9; color: white; }
+        .btn-reset { background: #e74c3c; color: white; grid-column: span 2; margin-top: 10px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Technical English Tutor</h2>
-    <p>Topic: Conductors and Insulators (Levels 1-2-3)</p>
+<div class="tutor-card">
+    <h1>Technical English Tutor</h1>
+    <div class="subtitle">Topic: Conductors and Insulators</div>
     
-    <div id="status">Pronto per iniziare</div>
-    <div id="transcript">Clicca sul microfono e rispondi alla domanda...</div>
+    <div id="status">Press START to begin the lesson</div>
+    <div id="transcript">Speech will appear here...</div>
 
-    <div class="controls">
-        <button class="btn-mic" id="micBtn" onclick="toggleMic()">AVVIA MICROFONO</button>
-        <button class="btn-send" id="sendBtn" onclick="inviaAlTutor()">INVIA RISPOSTA</button>
-        <button class="btn-reset" onclick="resetEsercizio()">CANCELLA E RIFAI</button>
+    <div class="button-group">
+        <button class="btn-start" id="startBtn" onclick="startTutor()">1. START TUTOR</button>
+        <button class="btn-mic" id="micBtn" onclick="toggleMic()" disabled>2. SPEAK</button>
+        <button class="btn-send" id="sendBtn" onclick="sendToTutor()" disabled>3. SEND ANSWER</button>
+        <button class="btn-reset" onclick="resetTutor()">RESET SYSTEM</button>
     </div>
 </div>
 
 <script>
-    // IL TUO URL DI GOOGLE SCRIPT (IL TUO TUBO)
     const TUBO_URL = "https://script.google.com/macros/s/AKfycby_f17Z1GMj1K-K62PThg1ZT4RGaNO0mwO2S1DJOu8wJvULI6NcPEm1YRviXYykUvs7/exec";
 
     let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-US';
     recognition.continuous = true;
-    let isListening = false;
+    let listening = false;
 
-    recognition.onresult = (event) => {
-        let currentText = event.results[event.results.length - 1][0].transcript;
-        document.getElementById('transcript').innerText = currentText;
-    };
-
-    function toggleMic() {
-        if (!isListening) {
-            recognition.start();
-            isListening = true;
-            document.getElementById('micBtn').innerText = "STOP MICROFONO";
-            document.getElementById('micBtn').style.backgroundColor = "#e67e22";
-            document.getElementById('status').innerText = "Ti sto ascoltando... Parla in inglese.";
-        } else {
-            recognition.stop();
-            isListening = false;
-            document.getElementById('micBtn').innerText = "AVVIA MICROFONO";
-            document.getElementById('micBtn').style.backgroundColor = "#27ae60";
-            document.getElementById('status').innerText = "Ascolto terminato. Controlla il testo.";
-        }
-    }
-
-    function resetEsercizio() {
-        document.getElementById('transcript').innerText = "...";
-        document.getElementById('status').innerText = "Sistema resettato. Ricominciamo dal Livello 1.";
-        // Comunica il reset allo script di Google
-        fetch(TUBO_URL, { method: 'POST', body: JSON.stringify({ testo: "reset" }) });
-    }
-
-    function inviaAlTutor() {
-        let testoDaInviare = document.getElementById('transcript').innerText;
-        if (testoDaInviare === "..." || testoDaInviare === "") return;
-
-        document.getElementById('status').innerText = "Il Tutor sta analizzando...";
-        document.getElementById('sendBtn').disabled = true;
-
-        fetch(TUBO_URL, {
-            method: 'POST',
-            body: JSON.stringify({ testo: testoDaInviare })
-        })
+    // --- LOGICA PULSANTI ---
+    
+    function startTutor() {
+        document.getElementById('status').innerText = "Tutor is starting...";
+        // Chiediamo la prima domanda al server inviando "reset" per essere sicuri di essere al Livello 1
+        fetch(TUBO_URL, { method: 'POST', body: JSON.stringify({ testo: "reset" }) })
         .then(res => res.text())
-        .then(risposta => {
-            document.getElementById('status').innerText = "Risposta ricevuta dal Tutor.";
+        .then(text => {
+            speak(text);
+            document.getElementById('status').innerText = "Level 1: Active";
+            document.getElementById('micBtn').disabled = false;
             document.getElementById('sendBtn').disabled = false;
-            parla(risposta);
-        })
-        .catch(err => {
-            document.getElementById('status').innerText = "Errore di connessione col server.";
-            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('startBtn').innerText = "TUTOR ACTIVE";
+            document.getElementById('startBtn').disabled = true;
         });
     }
 
-    function parla(testo) {
-        // Sintesi vocale per far parlare il tutor
-        let msg = new SpeechSynthesisUtterance(testo);
+    function toggleMic() {
+        if (!listening) {
+            recognition.start();
+            listening = true;
+            document.getElementById('micBtn').innerText = "STOP LISTENING";
+            document.getElementById('status').innerText = "Listening...";
+        } else {
+            recognition.stop();
+            listening = false;
+            document.getElementById('micBtn').innerText = "2. SPEAK";
+            document.getElementById('status').innerText = "Voice captured. Check text.";
+        }
+    }
+
+    recognition.onresult = (event) => {
+        let result = event.results[event.results.length - 1][0].transcript;
+        document.getElementById('transcript').innerText = result;
+    };
+
+    function sendToTutor() {
+        let text = document.getElementById('transcript').innerText;
+        if (text === "Speech will appear here..." || text === "") return;
+
+        document.getElementById('status').innerText = "Evaluating...";
+        fetch(TUBO_URL, { method: 'POST', body: JSON.stringify({ testo: text }) })
+        .then(res => res.text())
+        .then(reply => {
+            document.getElementById('status').innerText = "Tutor replied.";
+            speak(reply);
+        });
+    }
+
+    function resetTutor() {
+        window.speechSynthesis.cancel();
+        location.reload();
+    }
+
+    function speak(text) {
+        let msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'en-US';
         window.speechSynthesis.speak(msg);
     }
