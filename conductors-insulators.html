@@ -1,161 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Speaking Tutor – Conductors & Insulators</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,400&display=swap');
-  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --accent: #58a6ff; --green: #3fb950; --orange: #f0a742; --red: #f78166; --text: #e6edf3; --muted: #8b949e; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 24px 16px; }
-  header { width: 100%; max-width: 740px; display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-  .badge { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
-  h1 { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700; }
-  .level-track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; max-width: 740px; margin-bottom: 20px; }
-  .level-pip { height: 50px; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .level-pip.active { border-color: var(--accent); color: var(--accent); }
-  #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 100; display: flex; align-items: center; justify-content: center; }
-  #start-btn { background: var(--green); color: #000; padding: 20px 50px; border-radius: 12px; border: none; font-size: 18px; font-weight: 700; cursor: pointer; font-family: 'Space Mono', monospace; }
-  #chat-box { width: 100%; max-width: 740px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
-  .msg { padding: 10px 14px; border-radius: 10px; font-size: 14px; max-width: 85%; line-height: 1.5; }
-  .tutor { background: #1c2128; align-self: flex-start; border-left: 3px solid var(--accent); }
-  .student { background: #0d2137; align-self: flex-end; border-right: 3px solid var(--accent); }
-  #transcript-box { width: 100%; max-width: 740px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px; min-height: 60px; margin-bottom: 12px; color: var(--text); font-style: italic; }
-  .controls { width: 100%; max-width: 740px; display: flex; gap: 10px; }
-  .btn { flex: 1; padding: 13px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; text-transform: uppercase; }
-  #btn-talk { background: var(--red); color: white; flex: 2; }
-  #btn-send { background: var(--accent); color: #0d1117; }
-  #btn-reset { background: var(--border); color: white; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor: Conductors and Insulators</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 40px; background-color: #f0f4f8; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; margin-bottom: 10px; }
+        p { color: #7f8c8d; margin-bottom: 25px; }
+        #status { font-weight: bold; color: #3498db; margin-bottom: 15px; height: 20px; }
+        #transcript { border: 2px dashed #bdc3c7; padding: 20px; min-height: 80px; margin: 20px 0; border-radius: 10px; background: #fafafa; font-size: 1.1rem; line-height: 1.5; }
+        .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        button { padding: 12px 24px; font-size: 1rem; font-weight: bold; cursor: pointer; border-radius: 8px; border: none; transition: all 0.3s ease; }
+        .btn-mic { background-color: #27ae60; color: white; }
+        .btn-mic:hover { background-color: #2ecc71; }
+        .btn-send { background-color: #2980b9; color: white; }
+        .btn-send:hover { background-color: #3498db; }
+        .btn-reset { background-color: #c0392b; color: white; }
+        .btn-reset:hover { background-color: #e74c3c; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+    </style>
 </head>
 <body>
 
-<div id="start-screen">
-  <button id="start-btn">START PRACTICE</button>
-</div>
+<div class="container">
+    <h2>Technical English Tutor</h2>
+    <p>Topic: Conductors and Insulators (Levels 1-2-3)</p>
+    
+    <div id="status">Pronto per iniziare</div>
+    <div id="transcript">Clicca sul microfono e rispondi alla domanda...</div>
 
-<header>
-  <span class="badge">Unit 1</span>
-  <h1>Conductors & Insulators</h1>
-</header>
-
-<div class="level-track">
-  <div class="level-pip active" id="pip-1">LV 1</div>
-  <div class="level-pip" id="pip-2">LV 2</div>
-  <div class="level-pip" id="pip-3">LV 3</div>
-  <div class="level-pip" id="pip-4">LV 4</div>
-</div>
-
-<div id="chat-box"></div>
-<div id="transcript-box">Click 'TALK' to record your answer...</div>
-
-<div class="controls">
-  <button class="btn" id="btn-talk">🎤 TALK</button>
-  <button class="btn" id="btn-reset">✖ RESET</button>
-  <button class="btn" id="btn-send" disabled>SEND ➜</button>
+    <div class="controls">
+        <button class="btn-mic" id="micBtn" onclick="toggleMic()">AVVIA MICROFONO</button>
+        <button class="btn-send" id="sendBtn" onclick="inviaAlTutor()">INVIA RISPOSTA</button>
+        <button class="btn-reset" onclick="resetEsercizio()">CANCELLA E RIFAI</button>
+    </div>
 </div>
 
 <script>
-// URL CHE HAI APPENA TESTATO E FUNZIONA
-const PROXY_URL = 'https://script.google.com/macros/s/AKfycby_f17Z1GMj1K-K62PThg1ZT4RGaNO0mwO2S1DJOu8wJvULI6NcPEm1YRviXYykUvs7/exec';
+    // IL TUO URL DI GOOGLE SCRIPT (IL TUO TUBO)
+    const TUBO_URL = "https://script.google.com/macros/s/AKfycby_f17Z1GMj1K-K62PThg1ZT4RGaNO0mwO2S1DJOu8wJvULI6NcPEm1YRviXYykUvs7/exec";
 
-const QUESTIONS = {
-  1: ["What flows through a conductor?", "Name a material that is a good conductor.", "Name a good insulator."],
-  2: ["What is a conductor?", "What is an insulator?"],
-  3: ["Why are metals good conductors but rubber is not?"],
-  4: ["Explain the difference between conductors and insulators."]
-};
+    let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.continuous = true;
+    let isListening = false;
 
-let currentLevel = 1;
-let currentQIndex = 0;
-let lastTranscript = "";
-let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-recognition.lang = 'en-US';
+    recognition.onresult = (event) => {
+        let currentText = event.results[event.results.length - 1][0].transcript;
+        document.getElementById('transcript').innerText = currentText;
+    };
 
-function speak(text) {
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'en-US';
-  utter.rate = 0.9;
-  window.speechSynthesis.speak(utter);
-}
-
-recognition.onresult = (e) => {
-  lastTranscript = e.results[0][0].transcript;
-  document.getElementById('transcript-box').innerText = lastTranscript;
-  document.getElementById('btn-send').disabled = false;
-};
-
-document.getElementById('start-btn').onclick = () => {
-  document.getElementById('start-screen').style.display = 'none';
-  askQuestion();
-};
-
-document.getElementById('btn-talk').onclick = () => {
-  recognition.start();
-  document.getElementById('transcript-box').innerText = "Listening...";
-};
-
-document.getElementById('btn-reset').onclick = () => {
-  lastTranscript = "";
-  document.getElementById('transcript-box').innerText = "Cleared. Click TALK to try again.";
-  document.getElementById('btn-send').disabled = true;
-};
-
-async function sendMessage() {
-  addMessage('student', lastTranscript);
-  const q = QUESTIONS[currentLevel][currentQIndex];
-  document.getElementById('btn-send').disabled = true;
-  document.getElementById('transcript-box').innerText = "Thinking...";
-
-  try {
-    const response = await fetch(PROXY_URL, {
-      method: 'POST',
-      body: JSON.stringify({ prompt: `Level ${currentLevel}. Question: ${q}. Answer: ${lastTranscript}` })
-    });
-    const reply = await response.text();
-    
-    addMessage('tutor', reply);
-    speak(reply);
-
-    if (!reply.includes("busy")) {
-        currentQIndex++;
-        if (currentQIndex < QUESTIONS[currentLevel].length) {
-          setTimeout(askQuestion, 2500);
-        } else if (currentLevel < 4) {
-          currentLevel++; currentQIndex = 0;
-          addMessage('tutor', "Level Up!");
-          setTimeout(askQuestion, 3000);
+    function toggleMic() {
+        if (!isListening) {
+            recognition.start();
+            isListening = true;
+            document.getElementById('micBtn').innerText = "STOP MICROFONO";
+            document.getElementById('micBtn').style.backgroundColor = "#e67e22";
+            document.getElementById('status').innerText = "Ti sto ascoltando... Parla in inglese.";
+        } else {
+            recognition.stop();
+            isListening = false;
+            document.getElementById('micBtn').innerText = "AVVIA MICROFONO";
+            document.getElementById('micBtn').style.backgroundColor = "#27ae60";
+            document.getElementById('status').innerText = "Ascolto terminato. Controlla il testo.";
         }
     }
-  } catch (e) {
-    addMessage('tutor', "Error. Please try again.");
-    document.getElementById('btn-send').disabled = false;
-  }
-}
 
-document.getElementById('btn-send').onclick = sendMessage;
+    function resetEsercizio() {
+        document.getElementById('transcript').innerText = "...";
+        document.getElementById('status').innerText = "Sistema resettato. Ricominciamo dal Livello 1.";
+        // Comunica il reset allo script di Google
+        fetch(TUBO_URL, { method: 'POST', body: JSON.stringify({ testo: "reset" }) });
+    }
 
-function askQuestion() {
-  const q = QUESTIONS[currentLevel][currentQIndex];
-  addMessage('tutor', q);
-  speak(q);
-  lastTranscript = "";
-  document.getElementById('transcript-box').innerText = "Click 'TALK' to record...";
-  document.getElementById('btn-send').disabled = true;
-  document.querySelectorAll('.level-pip').forEach(p => p.classList.remove('active'));
-  document.getElementById(`pip-${currentLevel}`).classList.add('active');
-}
+    function inviaAlTutor() {
+        let testoDaInviare = document.getElementById('transcript').innerText;
+        if (testoDaInviare === "..." || testoDaInviare === "") return;
 
-function addMessage(role, text) {
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  div.innerText = text;
-  const cb = document.getElementById('chat-box');
-  cb.appendChild(div);
-  cb.scrollTop = cb.scrollHeight;
-}
+        document.getElementById('status').innerText = "Il Tutor sta analizzando...";
+        document.getElementById('sendBtn').disabled = true;
+
+        fetch(TUBO_URL, {
+            method: 'POST',
+            body: JSON.stringify({ testo: testoDaInviare })
+        })
+        .then(res => res.text())
+        .then(risposta => {
+            document.getElementById('status').innerText = "Risposta ricevuta dal Tutor.";
+            document.getElementById('sendBtn').disabled = false;
+            parla(risposta);
+        })
+        .catch(err => {
+            document.getElementById('status').innerText = "Errore di connessione col server.";
+            document.getElementById('sendBtn').disabled = false;
+        });
+    }
+
+    function parla(testo) {
+        // Sintesi vocale per far parlare il tutor
+        let msg = new SpeechSynthesisUtterance(testo);
+        msg.lang = 'en-US';
+        window.speechSynthesis.speak(msg);
+    }
 </script>
+
 </body>
 </html>
