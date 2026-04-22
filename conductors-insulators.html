@@ -2,278 +2,212 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tech English Quest</title>
+    <title>TechQuest 2026_</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00ff88; /* Verde Neon */
-            --secondary: #00bcd4; /* Blu Cyan */
-            --bg-dark: #0a0e17; /* Sfondo quasi nero */
-            --card-bg: rgba(16, 24, 39, 0.9); /* Sfondo scheda trasparente */
-            --text: #e0e6ed;
-            --glow: 0 0 15px rgba(0, 255, 136, 0.5);
+            --neon-green: #00ff88;
+            --neon-blue: #00bcd4;
+            --bg-black: #0a0e17;
+            --terminal-bg: rgba(16, 24, 39, 0.95);
         }
 
         body { 
+            background: var(--bg-black); 
+            color: var(--neon-green); 
             font-family: 'Roboto Mono', monospace; 
-            background-color: var(--bg-dark);
-            /* Sfondo spaziale sottile */
-            background-image: 
-                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
-                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
-                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
-            background-size: 550px 550px, 350px 350px, 250px 250px;
-            background-position: 0 0, 40px 60px, 130px 270px;
             display: flex; 
             justify-content: center; 
             align-items: center; 
             min-height: 100vh; 
             margin: 0; 
-            color: var(--text);
+            overflow-x: hidden;
         }
 
-        .game-container { 
-            background: var(--card-bg); 
-            width: 90%; 
-            max-width: 550px; 
+        .terminal { 
+            background: var(--terminal-bg); 
+            width: 95%; 
+            max-width: 500px; 
             padding: 30px; 
-            border-radius: 12px; 
-            border: 2px solid var(--primary);
+            border: 2px solid var(--neon-green); 
             box-shadow: 0 0 25px rgba(0, 255, 136, 0.2); 
-            text-align: center;
+            border-radius: 12px; 
             position: relative;
-            overflow: hidden;
-        }
-
-        /* Effetto Scanline olografico */
-        .game-container::before {
-            content: " ";
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px;
-            z-index: 10;
-            pointer-events: none;
-            opacity: 0.15;
         }
 
         h1 { 
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary); 
-            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif; 
+            text-align: center; 
+            font-size: 1.6rem; 
+            text-shadow: 0 0 10px var(--neon-green); 
+            margin-top: 0; 
             letter-spacing: 2px;
-            margin-bottom: 10px;
-            text-shadow: var(--glow);
         }
 
-        #display-text { 
-            font-size: 1.2rem; 
-            margin: 25px 0; 
-            min-height: 140px; 
-            color: var(--text); 
-            line-height: 1.6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 8px;
-            padding: 20px;
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            white-space: pre-wrap;
-            position: relative;
+        #history { 
+            font-size: 0.85rem; 
+            color: var(--neon-blue); 
+            margin-bottom: 12px; 
+            height: 1.3rem; 
+            font-style: italic; 
+            border-bottom: 1px solid #1a202c;
+            overflow: hidden;
+            white-space: nowrap;
         }
 
-        /* Mostra il livello corrente */
-        #display-text::before {
-            content: "SYSTEM MESSAGE //";
-            position: absolute;
-            top: 5px; left: 10px;
-            font-size: 0.7rem;
-            color: var(--primary);
-            opacity: 0.7;
+        #screen { 
+            background: #000; 
+            padding: 25px; 
+            border-radius: 8px; 
+            min-height: 180px; 
+            margin-bottom: 20px; 
+            border: 1px solid #333; 
+            font-size: 1.1rem; 
+            line-height: 1.6; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            color: #e0e6ed;
+            transition: all 0.3s;
         }
 
-        #user-echo { 
-            font-size: 0.9rem; 
-            color: #888; 
-            margin-top: -15px; 
-            margin-bottom: 25px;
-            min-height: 1.3rem;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
-        }
+        .input-group { position: relative; margin-bottom: 15px; }
 
-        .input-group { margin-bottom: 25px; position: relative; }
-        
         input { 
             width: 100%; 
-            padding: 18px; 
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #333; 
+            padding: 16px; 
+            background: #000; 
+            border: 1.5px solid var(--neon-green); 
+            color: var(--neon-blue); 
             border-radius: 6px; 
             font-size: 1.1rem; 
-            color: var(--secondary);
+            box-sizing: border-box; 
+            outline: none; 
             font-family: 'Roboto Mono', monospace;
-            box-sizing: border-box;
-            transition: all 0.3s;
-            outline: none;
         }
-        input:focus { 
-            border-color: var(--secondary); 
-            box-shadow: 0 0 15px rgba(0, 188, 212, 0.4); 
-        }
-        
-        /* Controlli di Gioco */
-        .controls { 
+
+        input:focus { box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+
+        .grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 15px; 
+            gap: 12px; 
         }
-        
+
         button { 
             padding: 16px; 
             border: none; 
             border-radius: 6px; 
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700; 
+            font-family: 'Orbitron', sans-serif; 
+            font-weight: bold; 
             cursor: pointer; 
-            transition: all 0.2s; 
-            font-size: 1rem;
-            text-transform: uppercase;
+            transition: 0.3s; 
+            text-transform: uppercase; 
             letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: relative;
-            overflow: hidden;
         }
 
-        /* Effetto Glitch al passaggio del mouse */
-        button:hover {
-            transform: translateY(-2px);
-        }
+        .btn-send { background: var(--neon-green); color: #0a0e17; }
+        .btn-mic { background: transparent; color: var(--neon-blue); border: 2px solid var(--neon-blue); }
+        
+        button:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        button:active { transform: translateY(0); }
 
-        .btn-send { 
-            background: var(--primary); 
-            color: #052c1a; 
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-        }
-        .btn-send:hover { 
-            background: #00e67a; 
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
-        }
-        
-        .btn-mic { 
-            background: #121926; 
-            color: var(--secondary); 
-            border: 2px solid var(--secondary);
-            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
-        }
-        .btn-mic:hover { 
-            background: rgba(0, 188, 212, 0.1); 
-            box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
-        }
-        
-        /* Pulsante Reset stile "Autodistruzione" */
         .btn-reset { 
             background: none; 
-            color: #555; 
-            font-size: 0.8rem; 
-            margin-top: 30px; 
-            text-decoration: none; 
-            border: 1px solid transparent;
-            padding: 8px;
-            width: 100%;
-            font-family: 'Roboto Mono', monospace;
+            color: #444; 
+            border: none; 
+            width: 100%; 
+            margin-top: 25px; 
+            cursor: pointer; 
+            font-size: 0.75rem; 
+            text-decoration: underline; 
+            font-family: inherit;
         }
-        .btn-reset:hover { 
-            color: #e53e3e;
-            border-color: rgba(229, 62, 62, 0.5); 
-            border-radius: 4px;
-            background: rgba(229, 62, 62, 0.05);
-        }
-        
-        /* Classi di stato per il testo */
-        .status-correct { 
-            color: var(--primary) !important; 
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.7);
-        }
-        .status-wrong { 
-            color: #e53e3e !important; 
-            text-shadow: 0 0 10px rgba(229, 62, 62, 0.7);
-            animation: shake 0.3s;
-        }
+        .btn-reset:hover { color: #ff4444; }
 
+        /* Effetti per errori e successi */
+        .shake { animation: shake 0.4s; color: #ff4444 !important; }
         @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-8px); }
         }
     </style>
 </head>
 <body>
 
-<div class="game-container">
-    <h1>> TECH QUEST_</h1>
-    <div id="display-text">INITIALIZING...<br>Type "reset" to begin the simulation.</div>
-    <div id="user-echo"></div>
+<div class="terminal">
+    <h1>> TECH_QUEST_</h1>
+    <div id="history">BOOTING SYSTEM...</div>
+    <div id="screen">CONNECTION ESTABLISHED.<br>Type "reset" and press Send to start the simulation.</div>
     
     <div class="input-group">
-        <input type="text" id="user-input" placeholder="Enter command or answer...">
+        <input type="text" id="user-input" placeholder="Enter command or answer..." autofocus>
     </div>
     
-    <div class="controls">
-        <button class="btn-send" onclick="processInput()">
-            [ ➤ ] SEND
-        </button>
-        <button class="btn-mic" id="mic-btn">
-            [ 🎤 ] SPEAK
-        </button>
+    <div class="grid">
+        <button class="btn-send" onclick="send()">[SEND]</button>
+        <button class="btn-mic" id="mic-btn">[VOICE]</button>
     </div>
 
-    <button class="btn-reset" onclick="resetGame()">Abort Mission (Reset)</button>
+    <button class="btn-reset" onclick="if(confirm('WARNING: This will wipe current progress. Proceed?')) send('reset')">FORCE SYSTEM RESET</button>
 </div>
 
 <script>
-    // Il tuo link Google Script invariato
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzqN5conrnr6mI1vzlts_dPIde3LMuNc6jjLvYaqasFWsnpFYtkHrMzgb7wkgPj7zSl/exec";
+    // IL TUO LINK UFFICIALE INTEGRATO
+    const url = "https://script.google.com/macros/s/AKfycbxRqDj7pNFwjGUGqVqMbsjjE2Ky9ACEm83oRJGo38m0sTw6Ju-UMCX5opa1THTqy5eC/exec";
     
-    const inputField = document.getElementById("user-input");
-    const displayText = document.getElementById("display-text");
-    const userEcho = document.getElementById("user-echo");
+    const input = document.getElementById('user-input');
+    const screen = document.getElementById('screen');
+    const history = document.getElementById('history');
 
-    async function processInput(forcedValue = null) {
-        const val = forcedValue || inputField.value.trim();
-        if(!val) return;
-        
-        // Suono di invio (opzionale, se hai un file audio)
-        // new Audio('send.mp3').play();
+    async function send(val) {
+        const text = val || input.value.trim();
+        if(!text) return;
 
-        userEcho.innerText = ">> LAST INPUT: " + val;
-        displayText.innerText = "DOWNLOADING DATA...";
-        inputField.value = ""; 
+        // Feedback immediato
+        history.innerText = ">> LAST_INPUT: " + text.toUpperCase();
+        screen.innerText = "ACCESSING DATABASE...";
+        screen.classList.remove('shake');
+        input.value = "";
 
         try {
-            const res = await fetch(scriptURL + "?testo=" + encodeURIComponent(val));
-            const data = await res.json();
+            const response = await fetch(url + "?testo=" + encodeURIComponent(text));
+            const data = await response.json();
             
-            // Applichiamo il testo con formattazione
-            displayText.innerHTML = data.text;
+            // Render del testo con a capo
+            screen.innerHTML = data.text.replace(/\n/g, "<br>");
             
-            // Feedback visivo dinamico
-            if(data.text.includes("❌") || data.text.includes("Wrong")) {
-                displayText.className = "status-wrong";
-                // new Audio('error.mp3').play(); // Suono errore
-            } else if(data.text.includes("✅") || data.text.includes("Correct") || data.text.includes("!")) {
-                displayText.className = "status-correct";
-                // new Audio('success.mp3').play(); // Suono successo
+            // Colore e animazione in caso di errore
+            if(data.text.includes("❌")) {
+                screen.classList.add('shake');
             } else {
-                displayText.className = "";
+                screen.style.color = "#e0e6ed"; // Colore normale
             }
         } catch(e) {
-            displayText.innerText = ">> ERROR: Connection unstable.";
+            screen.innerText = "CRITICAL ERROR: Connection to server lost.";
+            screen.style.color = "#ff4444";
         }
+    }
+
+    // Configurazione Vocale
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        send(transcript);
+    };
+
+    document.getElementById('mic-btn').onclick = () => {
+        recognition.start();
+        screen.innerText = "LISTENING... (Speak now)";
+    };
+
+    // Invio con tasto Enter
+    input.onkeypress = (e) => { if(e.key === 'Enter') send(); };
+</script>
+</body>
+</html>
