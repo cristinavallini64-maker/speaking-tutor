@@ -3,38 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engineer Challenge: Technical English</title>
+    <title>Engineering Technical English Challenge</title>
     <style>
         body { margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; background: #05080a; color: #00f3ff; display: flex; justify-content: center; align-items: center; height: 100vh; }
         #game-terminal { width: 550px; background: #0a1118; border: 2px solid #00f3ff; border-radius: 5px; padding: 25px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); transition: all 0.5s ease; }
-        h1 { font-size: 20px; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 10px 0; border-bottom: 1px solid #00f3ff; padding-bottom: 10px; }
+        h1 { font-size: 18px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 10px 0; border-bottom: 1px solid #00f3ff; padding-bottom: 10px; color: #00f3ff; }
         #hud { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; color: #888; }
         .stat { color: #00f3ff; font-weight: bold; }
-        #display-screen { background: #020508; border: 1px solid #1a2a3a; padding: 20px; min-height: 160px; margin-bottom: 20px; border-radius: 4px; font-size: 15px; line-height: 1.6; color: #00f3ff; overflow-y: auto; white-space: pre-wrap; }
-        #input-preview { font-size: 14px; color: #fff; background: rgba(255,255,255,0.05); padding: 12px; margin-bottom: 20px; border-radius: 4px; min-height: 35px; border-left: 3px solid #00f3ff; }
+        #display-screen { background: #020508; border: 1px solid #1a2a3a; padding: 20px; min-height: 180px; margin-bottom: 20px; border-radius: 4px; font-size: 15px; line-height: 1.6; color: #00f3ff; overflow-y: auto; white-space: pre-wrap; }
+        #input-preview { font-size: 14px; color: #fff; background: rgba(255,255,255,0.05); padding: 12px; margin-bottom: 20px; border-radius: 4px; min-height: 40px; border-left: 3px solid #00f3ff; }
         .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        button { background: transparent; border: 1px solid #00f3ff; color: #00f3ff; padding: 15px; font-family: 'Courier New', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        button { background: transparent; border: 1px solid #00f3ff; color: #00f3ff; padding: 15px; font-family: 'Courier New', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 3px; }
         button:hover:not(:disabled) { background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 10px #00f3ff; }
         button:disabled { border-color: #34495e; color: #34495e; cursor: not-allowed; }
-        .btn-main { grid-column: span 2; background: #00f3ff; color: #0a1118; font-size: 16px; }
-        .btn-speak { background: rgba(0, 243, 255, 0.05); font-size: 16px; }
+        .btn-main { grid-column: span 2; background: #00f3ff; color: #0a1118; font-size: 16px; border: none; }
+        .btn-speak { background: rgba(0, 243, 255, 0.05); font-size: 15px; }
         .btn-clear { border-color: #e67e22; color: #e67e22; }
-        .btn-reset { grid-column: span 2; border: none; color: #444; margin-top: 20px; font-size: 10px; text-decoration: underline; }
+        .btn-reset { grid-column: span 2; border: none; color: #444; margin-top: 20px; font-size: 10px; text-decoration: underline; background: transparent; }
         .listening { animation: pulse 1.5s infinite; background: #ff3e3e !important; color: white !important; border-color: #ff3e3e !important; }
-        @keyframes pulse { 0% { box-shadow: 0 0 5px #ff3e3e; } 50% { box-shadow: 0 0 20px #ff3e3e; } 100% { box-shadow: 0 0 5px #ff3e3e; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 5px #ff3e3e; } 50% { box-shadow: 0 0 15px #ff3e3e; } 100% { box-shadow: 0 0 5px #ff3e3e; } }
     </style>
 </head>
 <body>
 
 <div id="game-terminal">
-    <h1>Technical Challenge</h1>
+    <h1>Technical Assessment</h1>
     <div id="hud">
         <span>Level: <span id="lvl" class="stat">0</span></span>
         <span>Status: <span id="sts" class="stat">OFFLINE</span></span>
     </div>
 
-    <div id="display-screen">SYSTEM STANDBY. Press START to begin.</div>
-    <div id="input-preview">Voice input will appear here...</div>
+    <div id="display-screen">SYSTEM READY. Press START MISSION to begin the evaluation.</div>
+    <div id="input-preview">Voice input will be displayed here...</div>
 
     <div class="grid-buttons">
         <button id="startBtn" class="btn-main" onclick="startMission()">[ START MISSION ]</button>
@@ -45,8 +45,8 @@
 </div>
 
 <script>
-    // NUOVO LINK SCRIPT AGGIORNATO
-    const ENGINE_URL = "https://script.google.com/macros/s/AKfycbwkElaMBTd9K-iGVOqXuH86OII5FdvfNxtxvRDaO-Q_0kW_t96UhvvYXySeVyNjJjgg/exec";
+    // IL TUO NUOVO LINK AGGIORNATO
+    const ENGINE_URL = "https://script.google.com/macros/s/AKfycbyFEqJvJtcyG96MGoJ630CYbhVwnaAn4sP3k6MjVVbLpEN7TrOGO1LQMLg0kPJblOmZ/exec";
     
     let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-GB';
@@ -56,7 +56,8 @@
 
     function loadVoices() {
         let voices = window.speechSynthesis.getVoices();
-        britishVoice = voices.find(v => v.lang === 'en-GB' && (v.name.includes('UK') || v.name.includes('Google')));
+        // Cerchiamo una voce britannica chiara
+        britishVoice = voices.find(v => v.lang === 'en-GB' && (v.name.includes('Google') || v.name.includes('UK')));
     }
     window.speechSynthesis.onvoiceschanged = loadVoices;
 
@@ -78,13 +79,14 @@
             document.getElementById('micBtn').innerText = "CLICK TO SPEAK";
             document.getElementById('micBtn').classList.remove('listening');
             
+            // Invio automatico dopo un breve ritardo per catturare l'ultimo frammento audio
             setTimeout(() => {
                 let text = document.getElementById('input-preview').innerText;
-                if (text && text !== "Voice input will appear here...") {
+                if (text && text !== "Voice input will be displayed here...") {
                     document.getElementById('sts').innerText = "ANALYZING...";
                     processEngine(text);
                 }
-            }, 500); 
+            }, 600); 
         }
     }
 
@@ -106,9 +108,12 @@
             document.getElementById('lvl').innerText = data.level;
             document.getElementById('sts').innerText = data.status.toUpperCase();
             
+            // Gestione visiva del completamento finale
             if (data.status === "completed") {
                 document.getElementById('game-terminal').style.borderColor = "#f1c40f";
                 document.getElementById('game-terminal').style.boxShadow = "0 0 30px rgba(241, 196, 15, 0.4)";
+                document.getElementById('micBtn').disabled = true;
+                document.getElementById('clearBtn').disabled = true;
             }
             
             speak(data.text);
@@ -118,6 +123,9 @@
                 document.getElementById('micBtn').disabled = false;
                 document.getElementById('clearBtn').disabled = false;
             }
+        })
+        .catch(err => {
+            document.getElementById('display-screen').innerText = "CONNECTION ERROR. Check Script Deployment.";
         });
     }
 
@@ -126,8 +134,8 @@
         let msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'en-GB';
         if (britishVoice) msg.voice = britishVoice;
-        msg.pitch = 0.95;
-        msg.rate = 0.9;
+        msg.pitch = 1.0;
+        msg.rate = 0.95;
         window.speechSynthesis.speak(msg);
     }
 </script>
