@@ -5,233 +5,142 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Speaking Tutor – Conductors & Insulators</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;600&display=swap');
-
-  :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --border: #30363d;
-    --accent: #58a6ff;
-    --green: #3fb950;
-    --red: #f78166;
-    --text: #e6edf3;
-    --muted: #8b949e;
-  }
-
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 20px; min-height: 100vh;
-  }
-
-  header { width: 100%; max-width: 600px; margin-bottom: 20px; text-align: center; }
-  h1 { font-family: 'Space Mono', monospace; font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-
-  /* Progress Tracker */
-  .level-track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 600px; margin-bottom: 20px; }
-  .level-pip {
-    padding: 10px; border-radius: 8px; border: 2px solid var(--border);
-    background: var(--surface); text-align: center; cursor: pointer; transition: 0.2s;
-  }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --accent: #58a6ff; --green: #3fb950; --orange: #f0a742; --red: #f78166; --text: #e6edf3; --muted: #8b949e; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 24px 16px; }
+  header { width: 100%; max-width: 740px; display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+  .badge { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 20px; text-transform: uppercase; }
+  h1 { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700; }
+  .level-track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; max-width: 740px; margin-bottom: 20px; }
+  .level-pip { height: 50px; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
   .level-pip.active { border-color: var(--accent); color: var(--accent); }
-  .level-pip.done { border-color: var(--green); color: var(--green); }
-  .level-pip.locked { opacity: 0.4; cursor: not-allowed; }
-  .pip-num { display: block; font-weight: bold; font-family: 'Space Mono'; }
-  .pip-name { font-size: 10px; text-transform: uppercase; }
-
-  /* Chat Box */
-  #chat-box {
-    width: 100%; max-width: 600px; background: var(--surface);
-    border: 1px solid var(--border); border-radius: 12px;
-    height: 300px; overflow-y: auto; padding: 15px; margin-bottom: 15px;
-    display: flex; flex-direction: column; gap: 10px;
-  }
+  .pip-num { font-family: 'Space Mono', monospace; font-weight: 700; }
+  .pip-name { font-size: 9px; text-transform: uppercase; }
+  #chat-box { width: 100%; max-width: 740px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
   .msg { padding: 10px 14px; border-radius: 10px; font-size: 14px; max-width: 85%; }
   .tutor { background: #1c2128; align-self: flex-start; border-left: 3px solid var(--accent); }
   .student { background: #0d2137; align-self: flex-end; border-right: 3px solid var(--accent); }
-
-  /* Controls */
-  .controls { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 10px; }
-  #transcript-preview { 
-    background: var(--bg); border: 1px dashed var(--muted); 
-    padding: 10px; border-radius: 8px; min-height: 40px; font-style: italic; color: var(--muted);
-  }
-  .btn-group { display: flex; gap: 10px; }
-  .btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
-  #btn-talk { background: var(--red); color: white; }
-  #btn-send { background: var(--accent); color: #000; }
-  #btn-send:disabled { opacity: 0.3; }
-
-  .status-msg { font-size: 12px; color: var(--muted); font-family: 'Space Mono'; margin-top: 5px; }
+  #transcript-box { width: 100%; max-width: 740px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px; min-height: 52px; margin-bottom: 12px; color: var(--muted); font-style: italic; }
+  .controls { width: 100%; max-width: 740px; display: flex; gap: 10px; }
+  .btn { flex: 1; padding: 13px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
+  #btn-talk { background: var(--red); color: white; flex: 2; }
+  #btn-send { background: var(--accent); color: #0d1117; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Conductors & Insulators Speaking Tutor</h1>
-  <div id="status" class="status-msg">Ready to start Level 1</div>
+  <span class="badge">Unit 1</span>
+  <h1>Conductors & Insulators</h1>
 </header>
 
 <div class="level-track">
-  <div class="level-pip active" id="pip-1">
-    <span class="pip-num">1</span><span class="pip-name">Keywords</span>
-  </div>
-  <div class="level-pip locked" id="pip-2">
-    <span class="pip-num">2</span><span class="pip-name">Sentence</span>
-  </div>
-  <div class="level-pip locked" id="pip-3">
-    <span class="pip-num">3</span><span class="pip-name">Double Step</span>
-  </div>
-  <div class="level-pip locked" id="pip-4">
-    <span class="pip-num">4</span><span class="pip-name">Paragraph</span>
-  </div>
+  <div class="level-pip active" id="pip-1"><span class="pip-num">1</span><span class="pip-name">Keywords</span></div>
+  <div class="level-pip" id="pip-2"><span class="pip-num">2</span><span class="pip-name">Sentence</span></div>
+  <div class="level-pip" id="pip-3"><span class="pip-num">3</span><span class="pip-name">Double</span></div>
+  <div class="level-pip" id="pip-4"><span class="pip-num">4</span><span class="pip-name">Paragraph</span></div>
 </div>
 
-<div id="chat-box">
-  <div class="msg tutor">Hello! I am your AI Tutor. Let's start with Level 1 (Keywords). Press the button and answer in 1 or 2 words.</div>
-</div>
+<div id="chat-box"></div>
+<div id="transcript-box">Premi 'TALK' e rispondi in inglese...</div>
 
 <div class="controls">
-  <div id="transcript-preview">Your speech will appear here...</div>
-  <div class="btn-group">
-    <button class="btn" id="btn-talk">🎤 HOLD TO SPEAK</button>
-    <button class="btn" id="btn-send" disabled>SEND ANSWER ➜</button>
-  </div>
-  <button onclick="location.reload()" style="background:none; border:none; color:var(--muted); font-size:10px; cursor:pointer;">↺ Reset Session</button>
+  <button class="btn" id="btn-talk">🎤 TALK</button>
+  <button class="btn" id="btn-send" disabled>SEND ➜</button>
 </div>
 
 <script>
-// URL recuperato dal tuo screenshot
 const PROXY_URL = 'https://script.google.com/macros/s/AKfycby_f17Z1GMj1K-K62PThg1ZT4RGaNO0mwO2S1DJOu8wJvULI6NcPEm1YRviXYykUvs7/exec';
 
 const QUESTIONS = {
-  1: ["What flows through a conductor?", "Name a material that is a good conductor.", "What particles move freely inside conductors?", "Name a good insulator.", "What do insulators resist?", "Why are electrical cables covered with rubber or plastic?", "What is produced when electrons collide with atoms?", "What word describes a material's opposition to current?", "Which metal is most used in electric wires?"],
-  2: ["What is electric current?", "What is a conductor?", "Why are metals good conductors?", "What is an insulator?", "Why are electrical cables covered with insulating material?", "What is resistance?", "What happens when electrons collide with atoms?"],
-  3: ["Why are metals good conductors but rubber is not?", "Why are cables covered with rubber and why is it important?", "What is the relationship between resistance and heat?", "Why do insulators keep electric charge in place?", "How are free electrons related to electric current?", "What happens to resistance when electrons collide with atoms?"],
-  4: ["Explain conductors and insulators with examples.", "Explain why metals are good conductors (mention free electrons).", "Explain what resistance is and its effects.", "Explain cable construction and safety.", "Explain the difference between conductor and insulator resistance."]
+  1: ["What flows through a conductor?", "Name a material that is a good conductor.", "Name a good insulator."],
+  2: ["What is a conductor?", "What is an insulator?"],
+  3: ["Why are metals good conductors but rubber is not?"],
+  4: ["Explain the difference between conductors and insulators."]
 };
 
 let currentLevel = 1;
 let currentQIndex = 0;
 let recognition;
-let isSpeaking = false;
+let transcript = "";
 
-// Inizializzazione Riconoscimento Vocale
+// 1. SINTESI VOCALE (Far parlare il Tutor)
+function speak(text) {
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'en-US';
+  utter.rate = 0.9;
+  window.speechSynthesis.speak(utter);
+}
+
+// 2. RICONOSCIMENTO VOCALE (Ascoltare)
 if ('webkitSpeechRecognition' in window) {
   recognition = new webkitSpeechRecognition();
-  recognition.continuous = false;
-  recognition.interimResults = true;
   recognition.lang = 'en-US';
-
-  recognition.onresult = (event) => {
-    let transcript = event.results[0][0].transcript;
-    document.getElementById('transcript-preview').innerText = transcript;
+  recognition.onresult = (e) => {
+    transcript = e.results[0][0].transcript;
+    document.getElementById('transcript-box').innerText = transcript;
     document.getElementById('btn-send').disabled = false;
-  };
-
-  recognition.onend = () => {
     document.getElementById('btn-talk').style.background = 'var(--red)';
-    document.getElementById('btn-talk').innerText = '🎤 HOLD TO SPEAK';
   };
 }
 
-document.getElementById('btn-talk').addEventListener('mousedown', () => {
+document.getElementById('btn-talk').onclick = () => {
   recognition.start();
   document.getElementById('btn-talk').style.background = 'var(--green)';
-  document.getElementById('btn-talk').innerText = 'Listening...';
-});
+  document.getElementById('transcript-box').innerText = "Listening...";
+};
 
-document.getElementById('btn-talk').addEventListener('mouseup', () => {
-  recognition.stop();
-});
-
-// Funzione Invia Messaggio
+// 3. INVIO E RISPOSTA
 async function sendMessage() {
-  const transcript = document.getElementById('transcript-preview').innerText;
-  const chatBox = document.getElementById('chat-box');
-  const sendBtn = document.getElementById('btn-send');
-  
-  if (!transcript || transcript === "Your speech will appear here...") return;
-
-  // Mostra messaggio studente
-  const studentMsg = document.createElement('div');
-  studentMsg.className = 'msg student';
-  studentMsg.innerText = transcript;
-  chatBox.appendChild(studentMsg);
-  chatBox.scrollTop = chatBox.scrollHeight;
-
-  sendBtn.disabled = true;
-  document.getElementById('status').innerText = "Tutor is thinking...";
-
+  if (!transcript) return;
+  addMessage('student', transcript);
   const currentQ = QUESTIONS[currentLevel][currentQIndex];
-  const fullPrompt = `Level: ${currentLevel}. Question: ${currentQ}. Student Answer: ${transcript}. Provide brief feedback and confirm if correct.`;
+  
+  document.getElementById('btn-send').disabled = true;
+  document.getElementById('transcript-box').innerText = "Thinking...";
 
   try {
     const response = await fetch(PROXY_URL, {
       method: 'POST',
-      body: JSON.stringify({ prompt: fullPrompt })
+      body: JSON.stringify({ prompt: `Level ${currentLevel}. Question: ${currentQ}. Answer: ${transcript}` })
     });
     const reply = await response.text();
+    addMessage('tutor', reply);
+    speak(reply);
 
-    const tutorMsg = document.createElement('div');
-    tutorMsg.className = 'msg tutor';
-    tutorMsg.innerText = reply;
-    chatBox.appendChild(tutorMsg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    // Avanzamento domande
     currentQIndex++;
-    if (currentQIndex >= QUESTIONS[currentLevel].length) {
-      completeLevel();
+    if (currentQIndex < QUESTIONS[currentLevel].length) {
+      setTimeout(askQuestion, 2000);
     } else {
-      setTimeout(() => {
-        const nextQ = document.createElement('div');
-        nextQ.className = 'msg tutor';
-        nextQ.innerHTML = `<b>Next Question:</b> ${QUESTIONS[currentLevel][currentQIndex]}`;
-        chatBox.appendChild(nextQ);
-        chatBox.scrollTop = chatBox.scrollHeight;
-        document.getElementById('status').innerText = `Level ${currentLevel}: Q${currentQIndex+1}/${QUESTIONS[currentLevel].length}`;
-      }, 1000);
+      currentLevel++; currentQIndex = 0;
+      addMessage('tutor', "Great! Level Complete. Moving to next level...");
+      setTimeout(askQuestion, 3000);
     }
   } catch (e) {
-    alert("Connection error. Check your Google Script URL.");
-  }
-
-  document.getElementById('transcript-preview').innerText = "Your speech will appear here...";
-  document.getElementById('status').innerText = `Level ${currentLevel}: Q${currentQIndex+1}/${QUESTIONS[currentLevel].length}`;
-}
-
-function completeLevel() {
-  document.getElementById(`pip-${currentLevel}`).classList.remove('active');
-  document.getElementById(`pip-${currentLevel}`).classList.add('done');
-  
-  if (currentLevel < 4) {
-    currentLevel++;
-    currentQIndex = 0;
-    document.getElementById(`pip-${currentLevel}`).classList.remove('locked');
-    document.getElementById(`pip-${currentLevel}`).classList.add('active');
-    
-    const winMsg = document.createElement('div');
-    winMsg.className = 'msg tutor';
-    winMsg.style.borderColor = 'var(--green)';
-    winMsg.innerText = `LEVEL ${currentLevel-1} COMPLETE! Click on the next level above to start Level ${currentLevel}.`;
-    document.getElementById('chat-box').appendChild(winMsg);
-  } else {
-    document.getElementById('status').innerText = "CONGRATULATIONS! You finished all levels.";
+    addMessage('tutor', "Connection error.");
   }
 }
 
-document.getElementById('btn-send').addEventListener('click', sendMessage);
+function askQuestion() {
+  const q = QUESTIONS[currentLevel][currentQIndex];
+  addMessage('tutor', q);
+  speak(q);
+  transcript = "";
+  document.getElementById('transcript-box').innerText = "Premi 'TALK' per rispondere...";
+}
 
-// Prima domanda automatica
-window.onload = () => {
-  const firstQ = document.createElement('div');
-  firstQ.className = 'msg tutor';
-  firstQ.innerHTML = `<b>Q1:</b> ${QUESTIONS[1][0]}`;
-  document.getElementById('chat-box').appendChild(firstQ);
-  document.getElementById('status').innerText = `Level 1: Q1/${QUESTIONS[1].length}`;
-};
+function addMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerText = text;
+  document.getElementById('chat-box').appendChild(div);
+  document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+}
+
+document.getElementById('btn-send').onclick = sendMessage;
+window.onload = askQuestion;
 </script>
 </body>
 </html>
