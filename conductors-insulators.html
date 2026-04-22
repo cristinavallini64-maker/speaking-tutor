@@ -3,106 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Technical English Tutor</title>
+    <title>Engineer Challenge: Technical English</title>
     <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f4f7f6; }
-        .tutor-card { width: 450px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        h1 { font-size: 24px; color: #333; margin-bottom: 5px; }
-        .subtitle { font-size: 14px; color: #888; margin-bottom: 25px; }
-        #status { font-size: 14px; font-weight: bold; color: #2980b9; margin-bottom: 10px; min-height: 20px; }
-        #transcript { border: 1px solid #ddd; border-radius: 8px; padding: 15px; min-height: 80px; margin-bottom: 20px; background: #fafafa; font-size: 16px; color: #444; }
-        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; font-size: 13px; text-transform: uppercase; }
-        button:hover { opacity: 0.9; }
-        .btn-start { background: #2c3e50; color: white; grid-column: span 2; margin-bottom: 10px; }
-        .btn-mic { background: #27ae60; color: white; }
-        .btn-send { background: #2980b9; color: white; }
-        .btn-reset { background: #e74c3c; color: white; grid-column: span 2; margin-top: 10px; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        body { margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; background: #05080a; color: #00f3ff; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #game-terminal { width: 550px; background: #0a1118; border: 2px solid #00f3ff; border-radius: 5px; padding: 25px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); }
+        h1 { font-size: 20px; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 10px 0; border-bottom: 1px solid #00f3ff; padding-bottom: 10px; }
+        #hud { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 20px; color: #888; }
+        .stat { color: #00f3ff; font-weight: bold; }
+        #display-screen { background: #020508; border: 1px solid #1a2a3a; padding: 20px; min-height: 130px; margin-bottom: 20px; border-radius: 4px; font-size: 16px; line-height: 1.5; color: #00f3ff; overflow-y: auto; }
+        #input-preview { font-size: 13px; color: #7f8c8d; margin-bottom: 20px; font-style: italic; min-height: 20px; border-left: 3px solid #34495e; padding-left: 10px; }
+        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button { background: transparent; border: 1px solid #00f3ff; color: #00f3ff; padding: 12px; font-family: 'Courier New', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        button:hover:not(:disabled) { background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 10px #00f3ff; }
+        button:disabled { border-color: #34495e; color: #34495e; cursor: not-allowed; }
+        .btn-main { grid-column: span 2; background: #00f3ff; color: #0a1118; font-size: 16px; }
+        .btn-reset { grid-column: span 2; border: 1px solid #e74c3c; color: #e74c3c; margin-top: 10px; font-size: 11px; }
+        .listening { animation: pulse 1.5s infinite; background: rgba(0, 243, 255, 0.1) !important; }
+        @keyframes pulse { 0% { box-shadow: 0 0 5px #00f3ff; } 50% { box-shadow: 0 0 20px #00f3ff; } 100% { box-shadow: 0 0 5px #00f3ff; } }
     </style>
 </head>
 <body>
 
-<div class="tutor-card">
-    <h1>Technical English Tutor</h1>
-    <div class="subtitle">Topic: Conductors and Insulators</div>
-    
-    <div id="status">Press START to begin the lesson</div>
-    <div id="transcript">Speech will appear here...</div>
+<div id="game-terminal">
+    <h1>Technical Challenge</h1>
+    <div id="hud">
+        <span>Level: <span id="lvl" class="stat">0</span></span>
+        <span>Status: <span id="sts" class="stat">OFFLINE</span></span>
+    </div>
 
-    <div class="button-group">
-        <button class="btn-start" id="startBtn" onclick="startTutor()">1. START TUTOR</button>
-        <button class="btn-mic" id="micBtn" onclick="toggleMic()" disabled>2. SPEAK</button>
-        <button class="btn-send" id="sendBtn" onclick="sendToTutor()" disabled>3. SEND ANSWER</button>
-        <button class="btn-reset" onclick="resetTutor()">RESET SYSTEM</button>
+    <div id="display-screen">SYSTEM STANDBY. Press ACTIVATE MISSION to begin the engineering test.</div>
+    <div id="input-preview">Waiting for voice input...</div>
+
+    <div class="grid-buttons">
+        <button id="startBtn" class="btn-main" onclick="startMission()">[ ACTIVATE MISSION ]</button>
+        <button id="micBtn" onclick="toggleMic()" disabled>1. Speak</button>
+        <button id="sendBtn" onclick="sendData()" disabled>2. Send Answer</button>
+        <button class="btn-reset" onclick="location.reload()">ABORT / RESET</button>
     </div>
 </div>
 
 <script>
-    const TUBO_URL = "https://script.google.com/macros/s/AKfycby_f17Z1GMj1K-K62PThg1ZT4RGaNO0mwO2S1DJOu8wJvULI6NcPEm1YRviXYykUvs7/exec";
-
-    let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'en-US';
-    recognition.continuous = true;
-    let listening = false;
-
-    // --- LOGICA PULSANTI ---
+    const ENGINE_URL = "https://script.google.com/macros/s/AKfycbz8UENSXcvARJedpaevdoXg34skNM1mANrGncNeO5atENmbWcBDTdshqsBU4ndJ0k8/exec";
     
-    function startTutor() {
-        document.getElementById('status').innerText = "Tutor is starting...";
-        // Chiediamo la prima domanda al server inviando "reset" per essere sicuri di essere al Livello 1
-        fetch(TUBO_URL, { method: 'POST', body: JSON.stringify({ testo: "reset" }) })
-        .then(res => res.text())
-        .then(text => {
-            speak(text);
-            document.getElementById('status').innerText = "Level 1: Active";
-            document.getElementById('micBtn').disabled = false;
-            document.getElementById('sendBtn').disabled = false;
-            document.getElementById('startBtn').innerText = "TUTOR ACTIVE";
-            document.getElementById('startBtn').disabled = true;
-        });
+    let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-GB';
+    recognition.continuous = true;
+    let isListening = false;
+    let britishVoice = null;
+
+    function loadVoices() {
+        let voices = window.speechSynthesis.getVoices();
+        britishVoice = voices.find(v => v.lang === 'en-GB' && (v.name.includes('UK') || v.name.includes('Female')));
+    }
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    function startMission() {
+        document.getElementById('sts').innerText = "CONNECTING...";
+        processEngine("reset");
     }
 
     function toggleMic() {
-        if (!listening) {
+        if (!isListening) {
             recognition.start();
-            listening = true;
-            document.getElementById('micBtn').innerText = "STOP LISTENING";
-            document.getElementById('status').innerText = "Listening...";
+            isListening = true;
+            document.getElementById('micBtn').innerText = "STOP RECORDING";
+            document.getElementById('micBtn').classList.add('listening');
         } else {
             recognition.stop();
-            listening = false;
-            document.getElementById('micBtn').innerText = "2. SPEAK";
-            document.getElementById('status').innerText = "Voice captured. Check text.";
+            isListening = false;
+            document.getElementById('micBtn').innerText = "1. SPEAK";
+            document.getElementById('micBtn').classList.remove('listening');
         }
     }
 
     recognition.onresult = (event) => {
-        let result = event.results[event.results.length - 1][0].transcript;
-        document.getElementById('transcript').innerText = result;
+        let transcript = event.results[event.results.length - 1][0].transcript;
+        document.getElementById('input-preview').innerText = transcript;
     };
 
-    function sendToTutor() {
-        let text = document.getElementById('transcript').innerText;
-        if (text === "Speech will appear here..." || text === "") return;
+    function sendData() {
+        let text = document.getElementById('input-preview').innerText;
+        if (text === "Waiting for voice input..." || text === "") return;
+        document.getElementById('sts').innerText = "ANALYZING...";
+        processEngine(text);
+    }
 
-        document.getElementById('status').innerText = "Evaluating...";
-        fetch(TUBO_URL, { method: 'POST', body: JSON.stringify({ testo: text }) })
-        .then(res => res.text())
-        .then(reply => {
-            document.getElementById('status').innerText = "Tutor replied.";
-            speak(reply);
+    function processEngine(text) {
+        fetch(ENGINE_URL, { method: 'POST', body: JSON.stringify({ testo: text }) })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('display-screen').innerText = data.text;
+            document.getElementById('lvl').innerText = data.level;
+            document.getElementById('sts').innerText = data.status.toUpperCase();
+            speak(data.text);
+
+            if (text === "reset") {
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('micBtn').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+            }
         });
     }
 
-    function resetTutor() {
-        window.speechSynthesis.cancel();
-        location.reload();
-    }
-
     function speak(text) {
+        window.speechSynthesis.cancel();
         let msg = new SpeechSynthesisUtterance(text);
-        msg.lang = 'en-US';
+        msg.lang = 'en-GB';
+        if (britishVoice) msg.voice = britishVoice;
         window.speechSynthesis.speak(msg);
     }
 </script>
