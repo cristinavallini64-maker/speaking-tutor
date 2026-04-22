@@ -1,85 +1,95 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Electrical English Tutor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech English Tutor - Electricity</title>
     <style>
-        :root {
-            --lvl1: #3498db; --lvl2: #f1c40f; --lvl3: #e67e22; --bg: #f4f7f6;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
-        #badge { display: inline-block; padding: 5px 15px; border-radius: 20px; color: white; font-weight: bold; margin-bottom: 1rem; text-transform: uppercase; font-size: 0.8rem; }
-        .lvl-1 { background-color: var(--lvl1); }
-        .lvl-2 { background-color: var(--lvl2); color: #333 !important; }
-        .lvl-3 { background-color: var(--lvl3); }
-        #display-text { font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem; white-space: pre-wrap; min-height: 100px; }
-        input { width: 80%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; outline: none; transition: 0.3s; }
-        input:focus { border-color: #3498db; }
-        button { padding: 12px 25px; background: #2ecc71; border: none; color: white; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 10px; transition: 0.3s; }
-        button:hover { background: #27ae60; }
-        .status-wrong { color: #e74c3c; font-weight: bold; }
-        .status-correct { color: #2ecc71; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        #display-text { font-size: 1.2rem; margin: 20px 0; min-height: 100px; color: #2c3e50; white-space: pre-wrap; line-height: 1.5; }
+        #user-echo { font-style: italic; color: #95a5a6; margin-bottom: 15px; min-height: 1.2rem; font-size: 0.9rem; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; margin-bottom: 15px; box-sizing: border-box; }
+        .controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        button { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 1rem; }
+        .btn-send { background: #27ae60; color: white; flex-grow: 1; }
+        .btn-mic { background: #3498db; color: white; flex-grow: 1; }
+        .btn-reset { background: transparent; color: #e74c3c; font-size: 0.8rem; text-decoration: underline; border: none; cursor: pointer; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+        .status-wrong { color: #e74c3c; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div id="badge" class="lvl-1">Level 1: Vocabulary</div>
-    <div id="display-text">Caricamento missione...<br>Scrivi "reset" per iniziare.</div>
-    <input type="text" id="user-input" placeholder="Scrivi la tua risposta..." onkeypress="if(event.key==='Enter') sendData()">
-    <br>
-    <button onclick="sendData()">Invia Risposta</button>
+    <div id="display-text">Type "reset" to start the mission.</div>
+    <div id="user-echo"></div>
+    
+    <input type="text" id="user-input" placeholder="Type or click Speak...">
+    
+    <div class="controls">
+        <button class="btn-send" onclick="processInput()">SEND</button>
+        <button class="btn-mic" id="mic-btn">🎤 SPEAK</button>
+    </div>
+
+    <button class="btn-reset" onclick="resetGame()">Reset Progress</button>
 </div>
 
 <script>
-    // URL DEL TUO SCRIPT (VERIFICATO)
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwsBiVsAhgpjrZCOORKVhJnXLBiqWHYEZsGdhp3PRGAjYQTBjPIYK1mgbcf4XzObVlm/exec";
+    // IL TUO LINK AGGIORNATO
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzqN5conrnr6mI1vzlts_dPIde3LMuNc6jjLvYaqasFWsnpFYtkHrMzgb7wkgPj7zSl/exec";
+    
+    const inputField = document.getElementById("user-input");
+    const displayText = document.getElementById("display-text");
+    const userEcho = document.getElementById("user-echo");
 
-    async function sendData() {
-        const inputField = document.getElementById("user-input");
-        const displayText = document.getElementById("display-text");
-        const badge = document.getElementById("badge");
-        const val = inputField.value.trim();
+    async function processInput(forcedValue = null) {
+        const val = forcedValue || inputField.value.trim();
+        if(!val) return;
         
-        if (!val) return;
-        
-        displayText.innerHTML = "Pensando...";
-        inputField.value = "";
+        userEcho.innerText = "You said: " + val;
+        displayText.innerText = "Checking...";
+        inputField.value = ""; 
 
         try {
-            const response = await fetch(scriptURL, {
-                method: "POST",
-                mode: "no-cors", // Necessario per Google Apps Script
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ testo: val })
-            });
-
-            // Poiché usiamo no-cors, dobbiamo attendere un secondo e poi resettare 
-            // o gestire la risposta tramite una chiamata GET di controllo se necessario.
-            // TUTTAVIA, per un gioco semplice, la logica migliore è usare un bot push.
+            const res = await fetch(scriptURL + "?testo=" + encodeURIComponent(val));
+            const data = await res.json();
             
-            // NOTA: Per leggere la risposta da Apps Script "no-cors", 
-            // la soluzione più stabile è usare JSONP o cambiare l'approccio fetch.
-            // Ecco la versione corretta per leggere i dati:
+            // Gestione della risposta
+            displayText.innerText = data.text;
             
-            fetch(scriptURL + "?testo=" + encodeURIComponent(val))
-                .then(res => res.json())
-                .then(data => {
-                    displayText.innerHTML = data.text;
-                    badge.innerText = "Level " + data.level + (data.level == 1 ? ": Vocabulary" : data.level == 2 ? ": Comprehension" : ": Connectors");
-                    badge.className = "lvl-" + data.level;
-                    
-                    if(data.status === "wrong") displayText.classList.add("status-wrong");
-                    else displayText.classList.remove("status-wrong");
-                });
-
-        } catch (e) {
-            displayText.innerHTML = "Errore di connessione. Riprova.";
+            // Feedback visuale se sbagliato
+            if(data.text.includes("❌")) {
+                displayText.style.color = "#e74c3c";
+            } else {
+                displayText.style.color = "#2c3e50";
+            }
+        } catch(e) {
+            displayText.innerText = "Connection error. Please try again.";
         }
     }
-</script>
 
+    function resetGame() {
+        if(confirm("Do you want to restart from Level 1?")) {
+            processInput("reset");
+        }
+    }
+
+    // Speech Recognition Setup
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        processInput(transcript); 
+    };
+
+    document.getElementById("mic-btn").onclick = () => {
+        recognition.start();
+        displayText.innerText = "Listening...";
+    };
+
+    inputField.onkeypress = (e) => { if(e.key === 'Enter') processInput(); };
+</script>
 </body>
 </html>
