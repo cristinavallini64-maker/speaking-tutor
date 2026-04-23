@@ -3,96 +3,93 @@
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
-    :root { --neon-blue: #00f2ff; --neon-pink: #ff00ff; --neon-green: #00ff9d; --bg-dark: #020617; }
-    body { font-family: 'Orbitron', sans-serif; background: var(--bg-dark); color: white; margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .container { width: 90%; max-width: 420px; background: rgba(15, 23, 42, 0.9); padding: 30px; border: 2px solid var(--neon-blue); border-radius: 20px; box-shadow: 0 0 20px var(--neon-blue); position: relative; }
-    .lvl-nav { display: flex; gap: 10px; margin-bottom: 25px; }
-    .btn-lvl { flex: 1; padding: 12px; border: 1px solid var(--neon-blue); background: transparent; color: var(--neon-blue); cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; }
-    .btn-lvl.active { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
-    #response { height: 100px; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 10px; border-left: 5px solid var(--neon-pink); font-size: 14px; margin-bottom: 20px; overflow-y: auto; color: #cbd5e1; }
-    .mic-btn { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--neon-green); background: transparent; color: var(--neon-green); font-size: 40px; cursor: pointer; display: block; margin: 0 auto 20px auto; transition: 0.3s; }
-    .mic-btn.listening { background: var(--neon-pink); border-color: white; color: white; animation: pulse 1s infinite; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,0,255,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,0,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,255,0); } }
-    #preview { min-height: 50px; background: #0f172a; border-radius: 10px; padding: 10px; margin-bottom: 20px; font-size: 13px; color: var(--neon-green); border: 1px dashed var(--neon-green); text-align: center; }
-    .actions { display: flex; gap: 10px; }
-    .btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; transition: 0.2s; }
-    .btn-del { background: #334155; color: white; }
-    .btn-go { background: var(--neon-green); color: black; box-shadow: 0 0 10px var(--neon-green); }
-    .btn:active { transform: scale(0.95); }
+    body { background: #020617; color: #00ff9d; font-family: 'Share Tech Mono', monospace; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+    .box { width: 90%; max-width: 450px; background: #0f172a; border: 2px solid #00ff9d; border-radius: 15px; padding: 25px; box-shadow: 0 0 30px rgba(0,255,157,0.3); }
+    h2 { font-family: 'Orbitron'; text-align: center; font-size: 1rem; margin: 0 0 20px 0; color: white; letter-spacing: 2px; }
+    .nav { display: flex; gap: 8px; margin-bottom: 20px; }
+    .btn-lvl { flex: 1; padding: 10px 5px; background: transparent; border: 1px solid #00ff9d; color: #00ff9d; cursor: pointer; font-family: 'Orbitron'; font-size: 0.7rem; }
+    .btn-lvl.active { background: #00ff9d; color: #020617; box-shadow: 0 0 10px #00ff9d; }
+    #msg { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 10px; min-height: 90px; margin-bottom: 20px; border-left: 5px solid #ff0055; font-size: 1.1rem; color: #e2e8f0; line-height: 1.4; }
+    .mic-wrap { text-align: center; margin-bottom: 20px; }
+    #micBtn { width: 85px; height: 85px; border-radius: 50%; border: none; background: #ff0055; color: white; font-size: 35px; cursor: pointer; transition: 0.3s; }
+    #micBtn.listening { background: #00ff9d; box-shadow: 0 0 20px #00ff9d; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    #buffer { background: #000; padding: 12px; border-radius: 8px; color: #00ff9d; font-size: 0.9rem; min-height: 40px; margin-bottom: 20px; border: 1px solid #1e293b; text-align: center; }
+    .footer { display: flex; gap: 10px; }
+    .f-btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+    .b-clr { background: #334155; color: white; }
+    .b-snd { background: #00ff9d; color: #020617; }
   </style>
 </head>
 <body>
-<div class="container">
-  <div class="lvl-nav">
-    <button id="l1" class="btn-lvl" onclick="startLevel(1)">L-1</button>
-    <button id="l2" class="btn-lvl" onclick="startLevel(2)">L-2</button>
-    <button id="l3" class="btn-lvl" onclick="startLevel(3)">L-3</button>
+<div class="box">
+  <h2>ELECTRO MISSION</h2>
+  <div class="nav">
+    <button id="l1" class="btn-lvl" onclick="startL(1)">LVL 1</button>
+    <button id="l2" class="btn-lvl" onclick="startL(2)">LVL 2</button>
+    <button id="l3" class="btn-lvl" onclick="startL(3)">LVL 3</button>
   </div>
-  <div id="response">SYSTEM READY... STANDBY...</div>
-  <button id="micBtn" class="mic-btn">🎤</button>
-  <div id="preview">Ready for voice input...</div>
-  <div class="actions">
-    <button class="btn btn-del" onclick="clearLast()">DELETE</button>
-    <button class="btn btn-go" onclick="sendData()">SUBMIT</button>
+  <div id="msg">AWAITING MISSION START...</div>
+  <div class="mic-wrap"><button id="micBtn">🎤</button></div>
+  <div id="buffer">READY...</div>
+  <div class="footer">
+    <button class="f-btn b-clr" onclick="clr()">CLEAR</button>
+    <button class="f-btn b-snd" onclick="snd()">SUBMIT</button>
   </div>
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyR66K5x89N_2H37bJmYpW0xN_YAnvF-Gf30HInEwLh_6GjI6mK9N3zZtXhY0L9N_Y/exec";
-  const UID = "S_" + Math.random().toString(36).substr(2, 4);
-  let textBuffer = "";
+  const URL = "https://script.google.com/macros/s/AKfycbyR66K5x89N_2H37bJmYpW0xN_YAnvF-Gf30HInEwLh_6GjI6mK9N3zZtXhY0L9N_Y/exec";
+  const UID = "ID_" + Math.random().toString(36).substr(2, 5);
+  let bufferText = "";
 
   const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
   rec.lang = 'en-GB';
 
-  function talk(t) {
+  function speak(t) {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(t);
     u.lang = 'en-GB'; u.rate = 0.9;
     window.speechSynthesis.speak(u);
   }
 
-  window.onload = () => { setTimeout(() => talk("Welcome, Commander. Select your mission level."), 500); };
-
-  function startLevel(l) {
+  function startL(l) {
     document.querySelectorAll('.btn-lvl').forEach(b => b.classList.remove('active'));
     document.getElementById('l'+l).classList.add('active');
-    document.getElementById('response').innerText = "Loading Mission Data...";
-    fetch(`${SCRIPT_URL}?action=set_level&level=${l}&uid=${UID}`)
+    document.getElementById('msg').innerText = "CONNECTING TO HQ...";
+    fetch(`${URL}?action=set_level&level=${l}&uid=${UID}`)
       .then(r => r.json()).then(d => {
-        document.getElementById('response').innerText = d.text;
-        talk(d.text);
+        document.getElementById('msg').innerText = d.text;
+        speak(d.text);
       });
   }
 
   document.getElementById('micBtn').onclick = () => {
-    try { rec.start(); document.getElementById('micBtn').classList.add('listening'); } catch(e){}
+    rec.start(); document.getElementById('micBtn').classList.add('listening');
   };
 
   rec.onresult = (e) => {
-    const t = e.results[0][0].transcript;
-    textBuffer = (textBuffer + " " + t).trim();
-    document.getElementById('preview').innerText = textBuffer;
+    bufferText = (bufferText + " " + e.results[0][0].transcript).trim();
+    document.getElementById('buffer').innerText = bufferText;
     document.getElementById('micBtn').classList.remove('listening');
   };
 
-  function clearLast() {
-    let w = textBuffer.split(" "); w.pop();
-    textBuffer = w.join(" ");
-    document.getElementById('preview').innerText = textBuffer || "Ready...";
+  function clr() {
+    let w = bufferText.split(" "); w.pop();
+    bufferText = w.join(" ");
+    document.getElementById('buffer').innerText = bufferText || "READY...";
   }
 
-  function sendData() {
-    if(!textBuffer) return;
-    document.getElementById('response').innerText = "Analyzing transmission...";
-    fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(textBuffer)}&uid=${UID}`)
+  function snd() {
+    if(!bufferText) return;
+    document.getElementById('msg').innerText = "ANALYZING...";
+    fetch(`${URL}?testo=${encodeURIComponent(bufferText)}&uid=${UID}`)
       .then(r => r.json()).then(d => {
-        document.getElementById('response').innerText = d.text;
-        talk(d.text);
-        textBuffer = "";
-        document.getElementById('preview').innerText = "Transmission clear.";
+        document.getElementById('msg').innerText = d.text;
+        speak(d.text);
+        bufferText = ""; document.getElementById('buffer').innerText = "READY...";
       });
   }
 </script>
