@@ -4,34 +4,32 @@
   <meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
   <style>
-    body { background: #0f172a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .card { background: #1e293b; padding: 25px; border-radius: 20px; border: 2px solid #22d3ee; width: 90%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #1e293b; padding: 25px; border-radius: 20px; border: 2px solid #22d3ee; width: 90%; max-width: 450px; text-align: center; position: relative; }
     #ov { position: absolute; inset: 0; background: #0f172a; z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 18px; }
-    button { cursor: pointer; font-family: 'Orbitron'; border: none; transition: all 0.3s ease; }
-    .nav { display: flex; gap: 8px; margin-bottom: 20px; }
+    button { cursor: pointer; font-family: 'Orbitron'; border: none; }
+    .nav { display: flex; gap: 5px; margin-bottom: 20px; }
     .btn-l { flex: 1; padding: 12px; background: #334155; color: white; font-size: 11px; border-radius: 8px; }
-    .btn-l.active { background: #22d3ee; color: #0f172a; box-shadow: 0 0 10px #22d3ee; }
-    #disp { background: #0f172a; padding: 20px; border-radius: 12px; min-height: 100px; text-align: left; border-left: 5px solid #22d3ee; margin-bottom: 20px; font-size: 16px; line-height: 1.5; color: #e2e8f0; }
-    #pre { color: #22d3ee; font-size: 12px; min-height: 20px; margin-bottom: 20px; font-style: italic; opacity: 0.8; }
-    #mic { width: 75px; height: 75px; border-radius: 50%; background: #22d3ee; font-size: 32px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; margin-left: auto; margin-right: auto; }
-    #mic.rec { background: #f43f5e; box-shadow: 0 0 20px #f43f5e; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-    .btn-a { flex: 1; padding: 14px; font-weight: bold; color: white; border-radius: 10px; font-size: 12px; letter-spacing: 1px; }
+    .btn-l.active { background: #22d3ee; color: #0f172a; }
+    #disp { background: #0f172a; padding: 20px; border-radius: 12px; min-height: 100px; text-align: left; border-left: 5px solid #22d3ee; margin-bottom: 20px; font-size: 16px; line-height: 1.5; }
+    #pre { color: #22d3ee; font-size: 12px; min-height: 20px; margin-bottom: 20px; font-style: italic; }
+    #mic { width: 75px; height: 75px; border-radius: 50%; background: #22d3ee; font-size: 32px; margin-bottom: 20px; margin-left: auto; margin-right: auto; display:block; }
+    #mic.rec { background: #f43f5e; box-shadow: 0 0 20px #f43f5e; }
+    .btn-a { flex: 1; padding: 14px; font-weight: bold; color: white; border-radius: 10px; font-size: 12px; }
   </style>
 </head>
 <body>
   <div class="card">
     <div id="ov">
-      <h1 style="font-family:'Orbitron'; color:#22d3ee; letter-spacing: 2px;">TECH TUTOR</h1>
-      <p style="color: #94a3b8; margin-bottom: 20px;">Ready for your electronics mission?</p>
-      <button style="padding: 18px 40px; background: #22d3ee; border-radius:40px; color:#0f172a; font-weight: bold;" onclick="start()">INITIALIZE</button>
+      <h1 style="font-family:'Orbitron'; color:#22d3ee">TECH TUTOR</h1>
+      <button style="padding: 15px 35px; background: #22d3ee; border-radius:30px; color:#0f172a" onclick="start()">INITIALIZE</button>
     </div>
     <div class="nav">
-      <button id="l1" class="btn-l" onclick="setL(1)">LEVEL 1</button>
-      <button id="l2" class="btn-l" onclick="setL(2)">LEVEL 2</button>
-      <button id="l3" class="btn-l" onclick="setL(3)">LEVEL 3</button>
+      <button id="l1" class="btn-l" onclick="setL(1)">LVL 1</button>
+      <button id="l2" class="btn-l" onclick="setL(2)">LVL 2</button>
+      <button id="l3" class="btn-l" onclick="setL(3)">LVL 3</button>
     </div>
-    <div id="disp">System Online. Please select a mission level.</div>
+    <div id="disp">Select Level to start.</div>
     <div id="pre">Transmission: ...</div>
     <button id="mic" onclick="tgl()">🎤</button>
     <div style="display:flex; gap:10px;">
@@ -51,11 +49,11 @@
 
   function spk(t) {
     window.speechSynthesis.cancel();
-    const m = new SpeechSynthesisUtterance(t); m.lang = 'en-GB'; m.rate = 0.85;
+    const m = new SpeechSynthesisUtterance(t); m.lang = 'en-GB'; m.rate = 0.9;
     window.speechSynthesis.speak(m);
   }
 
-  function start() { document.getElementById('ov').style.display = 'none'; spk("Welcome Agent. Select a level to begin."); }
+  function start() { document.getElementById('ov').style.display = 'none'; spk("Select level."); }
 
   function setL(n) {
     document.querySelectorAll('.btn-l').forEach(b => b.classList.remove('active'));
@@ -80,20 +78,20 @@
     document.getElementById('pre').innerText = "Transmission: " + trans + " " + interim;
   };
 
-  function del() { trans = ""; document.getElementById('pre').innerText = "Transmission: ..."; }
+  function del() { trans = ""; document.getElementById('pre').innerText = "..."; }
 
   function send() {
     const d = document.getElementById('disp');
     const txt = trans || document.getElementById('pre').innerText.replace("Transmission: ","");
     if(!txt || txt === "...") return;
-    d.innerText = "Analyzing your response...";
+    d.innerText = "Analyzing...";
     rec.stop(); document.getElementById('mic').classList.remove('rec');
     fetch(`${URL}?testo=${encodeURIComponent(txt)}&uid=${uid}`)
       .then(r => r.json())
       .then(data => {
         d.innerText = data.text; spk(data.text);
-        trans = ""; document.getElementById('pre').innerText = "Transmission: ...";
-      }).catch(e => { d.innerText = "Communication error. Click SEND again."; });
+        trans = ""; document.getElementById('pre').innerText = "...";
+      }).catch(e => { d.innerText = "Error. Try again."; });
   }
 </script>
 </body>
