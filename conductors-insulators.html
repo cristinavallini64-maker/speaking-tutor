@@ -5,95 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; background: #0f172a; color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .card { background: #1e293b; width: 90%; max-width: 400px; padding: 25px; border-radius: 25px; border: 1px solid #334155; text-align: center; }
-    .lvl-nav { display: flex; gap: 8px; margin-bottom: 20px; }
-    .btn-lvl { flex: 1; background: #334155; color: #94a3b8; border: none; padding: 12px 5px; border-radius: 12px; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
-    .btn-lvl.active { background: #38bdf8; color: #0f172a; }
-    #response { background: rgba(15,23,42,0.6); padding: 18px; border-radius: 15px; margin-bottom: 15px; min-height: 80px; text-align: left; font-size: 15px; border-left: 4px solid #38bdf8; }
-    .btn-mic { width: 80px; height: 80px; border-radius: 50%; background: #38bdf8; border: none; font-size: 35px; cursor: pointer; margin-bottom: 15px; }
-    .btn-mic.listening { background: #ef4444; animation: pulse 1s infinite; }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-    #preview-box { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 12px; min-height: 40px; margin-bottom: 15px; color: #38bdf8; font-size: 14px; }
-    .controls { display: flex; gap: 10px; }
-    .btn-action { flex: 1; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; color: white; }
-    .btn-clear { background: #475569; }
-    .btn-send { background: #22c55e; }
+    :root { --neon-blue: #00f2ff; --neon-pink: #ff00ff; --neon-green: #00ff9d; --bg-dark: #020617; }
+    body { font-family: 'Orbitron', sans-serif; background: var(--bg-dark); color: white; margin: 0; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .container { width: 90%; max-width: 420px; background: rgba(15, 23, 42, 0.9); padding: 30px; border: 2px solid var(--neon-blue); border-radius: 20px; box-shadow: 0 0 20px var(--neon-blue); position: relative; }
+    .lvl-nav { display: flex; gap: 10px; margin-bottom: 25px; }
+    .btn-lvl { flex: 1; padding: 12px; border: 1px solid var(--neon-blue); background: transparent; color: var(--neon-blue); cursor: pointer; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+    .btn-lvl.active { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
+    #response { height: 100px; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 10px; border-left: 5px solid var(--neon-pink); font-size: 14px; margin-bottom: 20px; overflow-y: auto; color: #cbd5e1; }
+    .mic-btn { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--neon-green); background: transparent; color: var(--neon-green); font-size: 40px; cursor: pointer; display: block; margin: 0 auto 20px auto; transition: 0.3s; }
+    .mic-btn.listening { background: var(--neon-pink); border-color: white; color: white; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,0,255,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,0,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,255,0); } }
+    #preview { min-height: 50px; background: #0f172a; border-radius: 10px; padding: 10px; margin-bottom: 20px; font-size: 13px; color: var(--neon-green); border: 1px dashed var(--neon-green); text-align: center; }
+    .actions { display: flex; gap: 10px; }
+    .btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-del { background: #334155; color: white; }
+    .btn-go { background: var(--neon-green); color: black; box-shadow: 0 0 10px var(--neon-green); }
+    .btn:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
-<div class="card">
+<div class="container">
   <div class="lvl-nav">
-    <button id="l1" class="btn-lvl" onclick="setLevel(1)">LVL 1</button>
-    <button id="l2" class="btn-lvl" onclick="setLevel(2)">LVL 2</button>
-    <button id="l3" class="btn-lvl" onclick="setLevel(3)">LVL 3</button>
+    <button id="l1" class="btn-lvl" onclick="startLevel(1)">L-1</button>
+    <button id="l2" class="btn-lvl" onclick="startLevel(2)">L-2</button>
+    <button id="l3" class="btn-lvl" onclick="startLevel(3)">L-3</button>
   </div>
-  <div id="response">Welcome! Select a mission level to start.</div>
-  <button id="micBtn" class="btn-mic">🎤</button>
-  <div id="preview-box">Tap Mic and speak...</div>
-  <div class="controls">
-    <button class="btn-action btn-clear" onclick="deleteWord()">🗑️ CLEAR</button>
-    <button class="btn-action btn-send" onclick="send()">🚀 SEND</button>
+  <div id="response">SYSTEM READY... STANDBY...</div>
+  <button id="micBtn" class="mic-btn">🎤</button>
+  <div id="preview">Ready for voice input...</div>
+  <div class="actions">
+    <button class="btn btn-del" onclick="clearLast()">DELETE</button>
+    <button class="btn btn-go" onclick="sendData()">SUBMIT</button>
   </div>
 </div>
 
 <script>
-  // URL INSERITO DALLO SCREENSHOT
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyR66K5x89N_2H37bJmYpW0xN_YAnvF-Gf30HInEwLh_6GjI6mK9N3zZtXhY0L9N_Y/exec";
-  const userUID = "std_" + Math.random().toString(36).substr(2, 5);
-  let currentTranscript = "";
+  const UID = "S_" + Math.random().toString(36).substr(2, 4);
+  let textBuffer = "";
 
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = 'en-GB';
+  const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  rec.lang = 'en-GB';
 
-  function speak(txt) {
+  function talk(t) {
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(txt);
-    utterance.lang = 'en-GB';
-    utterance.rate = 0.85;
-    window.speechSynthesis.speak(utterance);
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = 'en-GB'; u.rate = 0.9;
+    window.speechSynthesis.speak(u);
   }
 
-  window.onload = () => { setTimeout(() => speak("Welcome! Select a mission level to start."), 1000); };
+  window.onload = () => { setTimeout(() => talk("Welcome, Commander. Select your mission level."), 500); };
 
-  function setLevel(lvl) {
+  function startLevel(l) {
     document.querySelectorAll('.btn-lvl').forEach(b => b.classList.remove('active'));
-    document.getElementById('l'+lvl).classList.add('active');
-    fetch(`${SCRIPT_URL}?action=set_level&level=${lvl}&uid=${userUID}`)
-      .then(r => r.json()).then(data => {
-        document.getElementById('response').innerText = data.text;
-        speak(data.text);
+    document.getElementById('l'+l).classList.add('active');
+    document.getElementById('response').innerText = "Loading Mission Data...";
+    fetch(`${SCRIPT_URL}?action=set_level&level=${l}&uid=${UID}`)
+      .then(r => r.json()).then(d => {
+        document.getElementById('response').innerText = d.text;
+        talk(d.text);
       });
   }
 
   document.getElementById('micBtn').onclick = () => {
-    recognition.start();
-    document.getElementById('micBtn').classList.add('listening');
+    try { rec.start(); document.getElementById('micBtn').classList.add('listening'); } catch(e){}
   };
 
-  recognition.onresult = (event) => {
-    const text = event.results[0][0].transcript;
-    currentTranscript = (currentTranscript + " " + text).trim();
-    document.getElementById('preview-box').innerText = currentTranscript;
+  rec.onresult = (e) => {
+    const t = e.results[0][0].transcript;
+    textBuffer = (textBuffer + " " + t).trim();
+    document.getElementById('preview').innerText = textBuffer;
     document.getElementById('micBtn').classList.remove('listening');
   };
 
-  function deleteWord() {
-    let words = currentTranscript.split(" ");
-    words.pop();
-    currentTranscript = words.join(" ");
-    document.getElementById('preview-box').innerText = currentTranscript || "Tap Mic and speak...";
+  function clearLast() {
+    let w = textBuffer.split(" "); w.pop();
+    textBuffer = w.join(" ");
+    document.getElementById('preview').innerText = textBuffer || "Ready...";
   }
 
-  function send() {
-    if(!currentTranscript) return;
-    document.getElementById('response').innerText = "Analyzing...";
-    fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(currentTranscript)}&uid=${userUID}`)
-      .then(r => r.json()).then(data => {
-        document.getElementById('response').innerText = data.text;
-        speak(data.text);
-        currentTranscript = "";
-        document.getElementById('preview-box').innerText = "Tap Mic and speak...";
+  function sendData() {
+    if(!textBuffer) return;
+    document.getElementById('response').innerText = "Analyzing transmission...";
+    fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(textBuffer)}&uid=${UID}`)
+      .then(r => r.json()).then(d => {
+        document.getElementById('response').innerText = d.text;
+        talk(d.text);
+        textBuffer = "";
+        document.getElementById('preview').innerText = "Transmission clear.";
       });
   }
 </script>
