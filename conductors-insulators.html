@@ -13,13 +13,13 @@
     .nav { display: flex; gap: 10px; margin-bottom: 20px; }
     .lvl-btn { flex: 1; padding: 12px; background: #334155; color: #94a3b8; border: none; border-radius: 12px; font-family: 'Orbitron'; font-size: 11px; cursor: pointer; }
     .lvl-btn.active { background: var(--cyan); color: var(--dark); box-shadow: 0 0 15px var(--cyan); }
-    #display { background: var(--dark); padding: 20px; border-radius: 15px; min-height: 120px; margin-bottom: 20px; text-align: left; border-left: 5px solid var(--cyan); font-size: 18px; }
+    #display { background: var(--dark); padding: 20px; border-radius: 15px; min-height: 120px; margin-bottom: 20px; text-align: left; border-left: 5px solid var(--cyan); font-size: 18px; line-height: 1.4; }
     #preview { color: var(--cyan); min-height: 24px; margin-bottom: 20px; font-size: 16px; font-style: italic; }
     #mic-btn { width: 80px; height: 80px; border-radius: 50%; background: var(--cyan); border: none; font-size: 35px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px rgba(34,211,238,0.4); }
     #mic-btn.listening { background: var(--red); animation: pulse 1.5s infinite; }
     @keyframes pulse { 0% {box-shadow: 0 0 0 0px rgba(244,63,94,0.7);} 70% {box-shadow: 0 0 0 20px rgba(244,63,94,0);} 100% {box-shadow: 0 0 0 0px rgba(244,63,94,0);} }
     .footer { display: flex; gap: 15px; }
-    .action-btn { flex: 1; padding: 16px; border-radius: 15px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; color: white; text-transform: uppercase; }
+    .action-btn { flex: 1; padding: 16px; border-radius: 15px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; color: white; text-transform: uppercase; font-size: 12px; }
     .btn-clear { background: #475569; }
     .btn-send { background: var(--green); }
   </style>
@@ -30,65 +30,111 @@
       <h1 style="font-family: 'Orbitron'; color: var(--cyan); margin-bottom: 40px;">TECH MISSION</h1>
       <button class="start-btn" onclick="begin()">START</button>
     </div>
+
     <div class="nav">
       <button id="lvl1" class="lvl-btn" onclick="loadLevel(1)">LVL 1</button>
       <button id="lvl2" class="lvl-btn" onclick="loadLevel(2)">LVL 2</button>
       <button id="lvl3" class="lvl-btn" onclick="loadLevel(3)">LVL 3</button>
     </div>
+
     <div id="display">Select a mission level, Agent.</div>
     <div id="preview">Transmission: ...</div>
+
     <button id="mic-btn" onclick="toggleMic()">🎤</button>
+
     <div class="footer">
       <button class="action-btn btn-clear" onclick="clearWord()">🗑️ Clear Word</button>
       <button class="action-btn btn-send" onclick="sendAnswer()">🚀 Send</button>
     </div>
   </div>
+
   <script>
+    // URL DELLO SCRIPT GIÀ INSERITO
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0lRQBSzadKSxvew_LWzVurjslmx1dDuQwK0A9oBe7G1DI1IpieWuL_MM_G7P37G0/exec";
+    
     const uid = "std_" + Math.random().toString(36).substr(2, 5);
     let transcript = "";
+    
+    // Configurazione Riconoscimento Vocale
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-GB';
     recognition.continuous = true;
     recognition.interimResults = true;
+
+    // Funzione Parlato (British Accent)
     function speak(t) {
       window.speechSynthesis.cancel();
       const m = new SpeechSynthesisUtterance(t);
-      m.lang = 'en-GB'; m.rate = 0.9; window.speechSynthesis.speak(m);
+      m.lang = 'en-GB'; 
+      m.rate = 0.9; 
+      window.speechSynthesis.speak(m);
     }
-    function begin() { document.getElementById('overlay').style.display = 'none'; speak("System online. Choose your level."); }
+
+    // Funzione Inizio
+    function begin() { 
+      document.getElementById('overlay').style.display = 'none'; 
+      speak("System online. Choose your level to begin the mission."); 
+    }
+
+    // Carica Livello
     function loadLevel(n) {
       document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('lvl'+n).classList.add('active');
-      fetch(`${SCRIPT_URL}?action=set_level&level=${n}&uid=${uid}`).then(r => r.json()).then(d => {
-        document.getElementById('display').innerText = d.text; speak(d.text);
-      });
+      fetch(`${SCRIPT_URL}?action=set_level&level=${n}&uid=${uid}`)
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById('display').innerText = d.text; 
+          speak(d.text);
+        });
     }
+
+    // Controllo Microfono
     function toggleMic() {
       const b = document.getElementById('mic-btn');
-      if (b.classList.contains('listening')) { recognition.stop(); b.classList.remove('listening'); }
-      else { recognition.start(); b.classList.add('listening'); }
+      if (b.classList.contains('listening')) { 
+        recognition.stop(); 
+        b.classList.remove('listening'); 
+      } else { 
+        recognition.start(); 
+        b.classList.add('listening'); 
+      }
     }
+
     recognition.onresult = (e) => {
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; ++i) {
-        if (e.results[i].isFinal) transcript = (transcript + " " + e.results[i][0].transcript).trim();
-        else interim += e.results[i][0].transcript;
+        if (e.results[i].isFinal) {
+          transcript = (transcript + " " + e.results[i][0].transcript).trim();
+        } else {
+          interim += e.results[i][0].transcript;
+        }
       }
       document.getElementById('preview').innerText = "Transmission: " + transcript + " " + interim;
     };
+
+    // Cancella una parola alla volta
     function clearWord() {
-      let w = transcript.split(" "); w.pop(); transcript = w.join(" ");
+      let w = transcript.split(" "); 
+      w.pop(); 
+      transcript = w.join(" ");
       document.getElementById('preview').innerText = "Transmission: " + (transcript || "...");
     }
+
+    // Invia Risposta al Tutor
     function sendAnswer() {
       if(!transcript) return;
-      document.getElementById('display').innerText = "Analyzing...";
-      recognition.stop(); document.getElementById('mic-btn').classList.remove('listening');
-      fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(transcript)}&uid=${uid}`).then(r => r.json()).then(d => {
-        document.getElementById('display').innerText = d.text; speak(d.text);
-        transcript = ""; document.getElementById('preview').innerText = "...";
-      });
+      document.getElementById('display').innerText = "Analyzing transmission...";
+      recognition.stop(); 
+      document.getElementById('mic-btn').classList.remove('listening');
+
+      fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(transcript)}&uid=${uid}`)
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById('display').innerText = d.text; 
+          speak(d.text);
+          transcript = ""; 
+          document.getElementById('preview').innerText = "Transmission: ...";
+        });
     }
   </script>
 </body>
