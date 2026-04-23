@@ -1,1 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>British Speaking Tutor - Voice Only Mission</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --bg-dark: #0a0b10;
+        }
 
+        /* Impedisce la selezione del testo per evitare copia-incolla */
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #terminal {
+            width: 80%;
+            max-width: 600px;
+            height: 300px;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow-y: auto;
+            font-size: 1.2rem;
+            line-height: 1.5;
+            pointer-events: none; /* Rende il riquadro non cliccabile */
+        }
+
+        .user-text { color: #ff4d4d; font-style: italic; }
+        .tutor-text { color: var(--neon-blue); font-weight: bold; }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 2px solid var(--neon-blue);
+            background: transparent;
+            color: var(--neon-blue);
+            transition: all 0.3s;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        button:hover {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        #btn-start { grid-column: span 2; border-color: #39ff14; color: #39ff14; }
+        #btn-report { grid-column: span 2; border-color: var(--neon-pink); color: var(--neon-pink); display: none; }
+
+        .active-rec { animation: pulse 1.5s infinite; border-color: red !important; color: red !important; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body onkeydown="return false;"> <h1 style="color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue);">MISSION CONTROL: VOICE ONLY</h1>
+
+    <div id="terminal">System Ready. Keyboard disabled. Press START MISSION to begin.</div>
+
+    <div class="controls">
+        <button id="btn-start" onclick="startMission()">🚀 Start Mission</button>
+        <button id="btn-rec" onclick="toggleRec()">🎤 Rec</button>
+        <button id="btn-del" onclick="deleteWord()">✖ Delete Word</button>
+        <button id="btn-send" onclick="sendData()">📡 Send Data</button>
+        <button id="btn-report" onclick="getReport()">📊 Get Final Report</button>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk3gOiG-ZjkeO7q7va-Ewo_p46k9Y1jLzu8q8jHV7BvjRHrQm-6iKh1KFr8cICsAnU/exec";
+        const terminal = document.getElementById('terminal');
+        let recognition;
+        let isRecording = false;
+        let transcriptBuffer = "";
+        let currentLevelCount = 0;
+
+        // Disabilita tasto destro per evitare "Ispeziona Elemento" facile
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            const voices = window.speechSynthesis.getVoices();
+            msg.voice = voices.find(v => v.lang.includes('en-GB')) || voices[0];
+            msg.rate = 0.9;
+            window.speechSynthesis.speak(msg);
+        }
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-GB';
+
+            recognition.onresult = (event) => {
+                const result = event.results[event.results.length - 1][0].transcript;
+                transcriptBuffer += " " + result;
+                updateTerminal();
+            };
+        }
+
+        function updateTerminal(customTutor) {
+            let tutorHTML = customTutor ? `<div class="tutor-text">${customTutor}</div>` : "";
+            terminal.innerHTML = tutorHTML + `<div class="user-text">> ${transcriptBuffer}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function startMission() {
+            transcriptBuffer = "";
+            fetch(`${SCRIPT_URL}?testo=reset`)
+                .then(res => res.json())
+                .then(data => {
+                    terminal.innerHTML = `<div class="tutor-text">${data.text}</div>`;
+                    speak(data.text);
+                });
+        }
+
+        function toggleRec() {
+            const btn = document.getElementById('btn-rec');
+            if (!isRecording) {
+                recognition.start();
+                btn.classList.add('active-rec');
+                isRecording = true;
+            } else {
+                recognition.stop();
+                btn.classList.remove('active-rec');
+                isRecording = false;
+            }
+        }
+
+        function deleteWord() {
+            let words = transcriptBuffer.trim().split(" ");
+            words.pop();
+            transcriptBuffer = words.join(" ");
+            updateTerminal();
+        }
+
+        function sendData() {
+            if (!transcriptBuffer.trim() || transcriptBuffer === "Processing...") return;
+            const tempText = transcriptBuffer;
+            transcriptBuffer = "Processing...";
+            updateTerminal();
+
+            fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(tempText)}`)
+                .then(res => res.json())
+                .then(data => {
+                    transcriptBuffer = "";
+                    updateTerminal(data.text);
+                    speak(data.text);
+                    
+                    currentLevelCount++;
+                    if (currentLevelCount >= 20) {
+                        document.getElementById('btn-report').style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    transcriptBuffer = "Connection Error. Try again.";
+                    updateTerminal();
+                });
+        }
+
+        function getReport() {
+            fetch(`${SCRIPT_URL}?testo=report`)
+                .then(res => res.json())
+                .then(data => {
+                    terminal.innerHTML = `<div class="tutor-text">${data.text}</div>`;
+                    speak(data.text);
+                });
+        }
+    </script>
+</body>
+</html>
