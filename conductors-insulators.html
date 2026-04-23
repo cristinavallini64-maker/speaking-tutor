@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speaking Mission - British Tutor</title>
     <style>
-        :root { --neon-blue: #00f3ff; --neon-pink: #ff00ff; --neon-green: #39ff14; --bg-dark: #0a0b10; }
+        :root { --neon-blue: #00f3ff; --neon-pink: #ff00ff; --neon-green: #39ff14; --bg-dark: #0a0b10; --disabled: #444; }
         * { user-select: none; -webkit-user-select: none; outline: none; box-sizing: border-box; }
         body {
             background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', Roboto, sans-serif;
@@ -22,13 +22,19 @@
         .user-text { color: #ff4d4d; font-style: italic; }
         .controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 90%; max-width: 650px; }
         .lvl-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+        
         button {
             padding: 15px; font-size: 1rem; font-weight: bold; text-transform: uppercase;
             cursor: pointer; border: 2px solid var(--neon-blue); background: transparent;
             color: var(--neon-blue); transition: all 0.3s; border-radius: 8px;
         }
-        button:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
-        .btn-lvl { border-color: var(--neon-green); color: var(--neon-green); padding: 10px 20px; }
+        button:hover:not(:disabled) { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
+        
+        /* Stile Livelli */
+        .btn-lvl { border-color: var(--disabled); color: var(--disabled); opacity: 0.6; cursor: not-allowed; }
+        .btn-lvl.active { border-color: var(--neon-green); color: var(--neon-green); opacity: 1; cursor: pointer; box-shadow: 0 0 10px var(--neon-green); }
+        .btn-lvl.completed { background: var(--neon-green); color: black; opacity: 1; }
+
         #btn-rec.active-rec { animation: pulse 1.5s infinite; border-color: red; color: red; }
         #btn-report { grid-column: span 2; border-color: var(--neon-pink); color: var(--neon-pink); display: none; }
         #btn-send { grid-column: span 2; border-color: var(--neon-blue); }
@@ -39,14 +45,14 @@
 
     <h1 style="color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); margin: 10px;">SPEAKING MISSION</h1>
 
-    <div class="lvl-selector" id="lvl-container">
-        <button class="btn-lvl" onclick="selectLevel(1)">Level 1</button>
-        <button class="btn-lvl" onclick="selectLevel(2)">Level 2</button>
-        <button class="btn-lvl" onclick="selectLevel(3)">Level 3</button>
+    <div class="lvl-selector">
+        <button id="lvl1" class="btn-lvl active" onclick="selectLevel(1)">Level 1</button>
+        <button id="lvl2" class="btn-lvl" onclick="selectLevel(2)" disabled>Level 2</button>
+        <button id="lvl3" class="btn-lvl" onclick="selectLevel(3)" disabled>Level 3</button>
     </div>
 
     <div id="terminal">
-        <div class="tutor-text">Select a level to begin...</div>
+        <div class="tutor-text">Mission Ready. Tap Level 1 to start...</div>
     </div>
 
     <div class="controls">
@@ -61,20 +67,11 @@
         let recognition;
         let isRecording = false;
         let transcriptBuffer = "";
-
-        // Caricamento voce British
-        let britishVoice = null;
-        function loadVoices() {
-            const voices = window.speechSynthesis.getVoices();
-            britishVoice = voices.find(v => v.lang === 'en-GB' || v.name.includes('UK'));
-        }
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-        loadVoices();
+        let currentLevelActive = 1;
 
         function speak(text) {
             window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
-            if (britishVoice) msg.voice = britishVoice;
             msg.lang = 'en-GB';
             msg.rate = 0.9;
             window.speechSynthesis.speak(msg);
@@ -99,14 +96,45 @@
 
         function selectLevel(lvl) {
             transcriptBuffer = "";
-            updateTerminal("Loading Level " + lvl + "...");
+            updateTerminal("Initializing Level " + lvl + "...");
             fetch(`${SCRIPT_URL}?testo=startLvl${lvl}`)
                 .then(res => res.json())
                 .then(data => {
                     updateTerminal(data.text);
                     speak(data.text);
-                    // Reset visibilità report al cambio livello
-                    document.getElementById('btn-report').style.display = 'none';
+                });
+        }
+
+        function unlockLevel(lvl) {
+            const prevLvl = document.getElementById('lvl' + (lvl - 1));
+            const nextLvl = document.getElementById('lvl' + lvl);
+            if(prevLvl) prevLvl.classList.add('completed');
+            if(nextLvl) {
+                nextLvl.disabled = false;
+                nextLvl.classList.add('active');
+            }
+        }
+
+        function sendData() {
+            if (!transcriptBuffer.trim() || transcriptBuffer === "Processing...") return;
+            const textToSend = transcriptBuffer;
+            transcriptBuffer = "Processing...";
+            updateTerminal();
+
+            fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(textToSend)}`)
+                .then(res => res.json())
+                .then(data => {
+                    transcriptBuffer = "";
+                    updateTerminal(data.text);
+                    speak(data.text);
+                    
+                    // LOGICA SBLOCCO LIVELLI
+                    // Se il server dice che il livello è finito, sblocchiamo il prossimo
+                    if (data.text.includes("Level 1 Complete")) unlockLevel(2);
+                    if (data.text.includes("Level 2 Complete")) {
+                        unlockLevel(3);
+                        document.getElementById('btn-report').style.display = 'block';
+                    }
                 });
         }
 
@@ -130,36 +158,12 @@
             updateTerminal();
         }
 
-        function sendData() {
-            if (!transcriptBuffer.trim() || transcriptBuffer === "Processing...") return;
-            const textToSend = transcriptBuffer;
-            transcriptBuffer = "Processing...";
-            updateTerminal();
-
-            fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(textToSend)}`)
-                .then(res => res.json())
-                .then(data => {
-                    transcriptBuffer = "";
-                    updateTerminal(data.text);
-                    speak(data.text);
-                    
-                    // Mostra il report solo se il server conferma showReport: true
-                    if (data.showReport === true) {
-                        document.getElementById('btn-report').style.display = 'block';
-                    }
-                });
-        }
-
         function getReport() {
-            fetch(`${SCRIPT_URL}?testo=report`)
-                .then(res => res.json())
-                .then(data => {
-                    updateTerminal(data.text);
-                    speak(data.text);
-                });
+            fetch(`${SCRIPT_URL}?testo=report`).then(res => res.json()).then(data => {
+                updateTerminal(data.text);
+                speak(data.text);
+            });
         }
-
-        document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
 </body>
 </html>
