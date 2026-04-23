@@ -1,168 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speaking Mission - British Tutor</title>
-    <style>
-        :root { --neon-blue: #00f3ff; --neon-pink: #ff00ff; --neon-green: #39ff14; --bg-dark: #0a0b10; --disabled: #444; }
-        * { user-select: none; -webkit-user-select: none; outline: none; box-sizing: border-box; }
-        body {
-            background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; margin: 0; overflow: hidden;
-        }
-        #terminal {
-            width: 90%; max-width: 650px; height: 300px;
-            border: 2px solid var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue);
-            background: black; padding: 20px; margin-bottom: 20px;
-            border-radius: 12px; overflow-y: auto; font-size: 1.2rem;
-        }
-        .tutor-text { color: var(--neon-blue); font-weight: bold; margin-bottom: 10px; }
-        .user-text { color: #ff4d4d; font-style: italic; }
-        .controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 90%; max-width: 650px; }
-        .lvl-selector { display: flex; gap: 10px; margin-bottom: 20px; }
-        
-        button {
-            padding: 15px; font-size: 1rem; font-weight: bold; text-transform: uppercase;
-            cursor: pointer; border: 2px solid var(--neon-blue); background: transparent;
-            color: var(--neon-blue); transition: all 0.3s; border-radius: 8px;
-        }
-        button:hover:not(:disabled) { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
-        
-        .btn-lvl { border-color: var(--disabled); color: var(--disabled); opacity: 0.6; cursor: not-allowed; }
-        .btn-lvl.active { border-color: var(--neon-green); color: var(--neon-green); opacity: 1; cursor: pointer; box-shadow: 0 0 10px var(--neon-green); }
-        .btn-lvl.completed { background: var(--neon-green); color: black; opacity: 1; }
-
-        #btn-rec.active-rec { animation: pulse 1.5s infinite; border-color: red; color: red; }
-        #btn-report { grid-column: span 2; border-color: var(--neon-pink); color: var(--neon-pink); display: none; }
-        #btn-send { grid-column: span 2; border-color: var(--neon-blue); }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-    </style>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f4f7f6; padding: 20px; }
+    .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+    .btn-lvl { background: #555; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+    .btn-lvl:hover { background: #333; }
+    .btn-mic { background: #007bff; color: white; width: 100px; height: 100px; border-radius: 50%; font-size: 40px; border: none; margin: 25px 0; cursor: pointer; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
+    #response { margin-top: 20px; font-weight: bold; min-height: 80px; border-top: 1px solid #eee; padding-top: 15px; white-space: pre-line; }
+    #status { color: #888; font-size: 13px; }
+  </style>
 </head>
-<body onkeydown="return false;">
+<body>
 
-    <h1 style="color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); margin: 10px;">SPEAKING MISSION</h1>
+<div class="container">
+  <h3>⚡ Tech Quiz Selector</h3>
+  
+  <div style="margin-bottom: 15px;">
+    <button class="btn-lvl" onclick="setLevel(1)">Level 1</button>
+    <button class="btn-lvl" onclick="setLevel(2)">Level 2</button>
+    <button class="btn-lvl" onclick="setLevel(3)">Level 3</button>
+  </div>
 
-    <div class="lvl-selector">
-        <button id="lvl1" class="btn-lvl active" onclick="selectLevel(1)">Level 1</button>
-        <button id="lvl2" class="btn-lvl" onclick="selectLevel(2)" disabled>Level 2</button>
-        <button id="lvl3" class="btn-lvl" onclick="selectLevel(3)" disabled>Level 3</button>
-    </div>
+  <div id="status">Click a level to start</div>
+  <button id="micBtn" class="btn-mic">🎤</button>
+  
+  <div id="response">Choose your mission!</div>
+</div>
 
-    <div id="terminal">
-        <div class="tutor-text">Mission Ready. Tap Level 1 to start...</div>
-    </div>
+<script>
+  // SOSTITUISCI CON IL TUO URL
+  const SCRIPT_URL = "https://script.google.com/macros/s/INSERISCI_QUI_URL/exec";
+  const userUID = "std_" + Math.random().toString(36).substr(2, 5);
 
-    <div class="controls">
-        <button id="btn-rec" onclick="toggleRec()">🎤 Rec</button>
-        <button id="btn-del" onclick="deleteWord()">✖ Delete Word</button>
-        <button id="btn-send" onclick="sendData()">📡 Send Data</button>
-        <button id="btn-report" onclick="getReport()">📊 Get Final Report</button>
-    </div>
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'en-US';
 
-    <script>
-        const MY_UID = "id_" + Math.random().toString(36).substr(2, 9);
-        const BASE_URL = "https://script.google.com/macros/s/AKfycbzWnT_nyuCGb00_GADg_vAOOz-iCx6N_SPr-1-7zuY8u0TVupUvhh68Lx83mCipVsiX/exec";
-        
-        let recognition;
-        let isRecording = false;
-        let transcriptBuffer = "";
+  // FUNZIONE PER I BOTTONI
+  function setLevel(lvl) {
+    document.getElementById('status').innerText = "Starting Level " + lvl + "...";
+    fetch(`${SCRIPT_URL}?action=set_level&level=${lvl}&uid=${userUID}`)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('response').innerText = data.text;
+        document.getElementById('status').innerText = "Listening for answers...";
+      });
+  }
 
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'en-GB';
-            msg.rate = 0.9;
-            window.speechSynthesis.speak(msg);
-        }
+  // FUNZIONE PER IL MICROFONO
+  micBtn.onclick = () => {
+    recognition.start();
+    document.getElementById('status').innerText = "Listening...";
+  };
 
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.continuous = true;
-            recognition.lang = 'en-GB';
-            recognition.onresult = (event) => {
-                transcriptBuffer += " " + event.results[event.results.length - 1][0].transcript;
-                updateTerminal();
-            };
-        }
+  recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript;
+    document.getElementById('status').innerText = "Processing...";
+    fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(text)}&uid=${userUID}`)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('response').innerText = data.text;
+        document.getElementById('status').innerText = "Ready";
+      });
+  };
+</script>
 
-        function updateTerminal(tutorMsg) {
-            const term = document.getElementById('terminal');
-            const currentTutor = tutorMsg || (term.querySelector('.tutor-text') ? term.querySelector('.tutor-text').innerText : "");
-            term.innerHTML = `<div class="tutor-text">${currentTutor}</div><div class="user-text">> ${transcriptBuffer}</div>`;
-            term.scrollTop = term.scrollHeight;
-        }
-
-        function selectLevel(lvl) {
-            transcriptBuffer = "";
-            updateTerminal("Initializing Level " + lvl + "...");
-            fetch(`${BASE_URL}?uid=${MY_UID}&testo=startLvl${lvl}`)
-                .then(res => res.json())
-                .then(data => {
-                    updateTerminal(data.text);
-                    speak(data.text);
-                });
-        }
-
-        function unlockLevel(lvl) {
-            const prevLvl = document.getElementById('lvl' + (lvl - 1));
-            const nextLvl = document.getElementById('lvl' + lvl);
-            if(prevLvl) prevLvl.classList.add('completed');
-            if(nextLvl) {
-                nextLvl.disabled = false;
-                nextLvl.classList.add('active');
-            }
-        }
-
-        function sendData() {
-            if (!transcriptBuffer.trim() || transcriptBuffer === "Processing...") return;
-            const textToSend = transcriptBuffer;
-            transcriptBuffer = "Processing...";
-            updateTerminal();
-
-            fetch(`${BASE_URL}?uid=${MY_UID}&testo=${encodeURIComponent(textToSend)}`)
-                .then(res => res.json())
-                .then(data => {
-                    transcriptBuffer = "";
-                    updateTerminal(data.text);
-                    speak(data.text);
-                    
-                    if (data.text.includes("Level 1 Complete")) unlockLevel(2);
-                    if (data.text.includes("Level 2 Complete")) {
-                        unlockLevel(3);
-                        document.getElementById('btn-report').style.display = 'block';
-                    }
-                });
-        }
-
-        function toggleRec() {
-            const btn = document.getElementById('btn-rec');
-            if (!isRecording) {
-                recognition.start();
-                btn.classList.add('active-rec');
-                isRecording = true;
-            } else {
-                recognition.stop();
-                btn.classList.remove('active-rec');
-                isRecording = false;
-            }
-        }
-
-        function deleteWord() {
-            let words = transcriptBuffer.trim().split(" ");
-            words.pop();
-            transcriptBuffer = words.join(" ");
-            updateTerminal();
-        }
-
-        function getReport() {
-            fetch(`${BASE_URL}?uid=${MY_UID}&testo=report`).then(res => res.json()).then(data => {
-                updateTerminal(data.text);
-                speak(data.text);
-            });
-        }
-        document.addEventListener('contextmenu', e => e.preventDefault());
-    </script>
 </body>
 </html>
