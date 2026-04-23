@@ -2,131 +2,199 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TechQuest 2026_</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <title>British Speaking Tutor - Mission Control</title>
     <style>
-        :root { --neon-green: #00ff88; --neon-blue: #00bcd4; --bg-black: #0a0e17; }
-        body { background: var(--bg-black); color: var(--neon-green); font-family: 'Roboto Mono', monospace; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .terminal { background: rgba(16, 24, 39, 0.95); width: 95%; max-width: 500px; padding: 30px; border: 2px solid var(--neon-green); box-shadow: 0 0 25px rgba(0, 255, 136, 0.3); border-radius: 12px; position: relative; }
-        h1 { font-family: 'Orbitron', sans-serif; text-align: center; color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); margin-top: 0; }
-        #screen { background: #000; padding: 25px; border-radius: 8px; min-height: 180px; margin-bottom: 20px; border: 1px solid #333; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; line-height: 1.4; }
-        #start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-black); display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 12px; z-index: 10; }
-        .btn-big-start { padding: 20px 40px; font-size: 2rem; font-family: 'Orbitron'; background: var(--neon-green); color: #000; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0 20px var(--neon-green); }
-        
-        .input-container { position: relative; display: flex; align-items: center; margin-bottom: 15px; }
-        input { width: 100%; padding: 16px; padding-right: 60px; background: #000; border: 1.5px solid var(--neon-green); color: var(--neon-blue); border-radius: 6px; font-size: 1.2rem; outline: none; text-align: center; font-family: inherit; }
-        
-        /* Tasto cancella singola parola */
-        .btn-clear { position: absolute; right: 10px; background: #1a202c; border: 1px solid #ff4444; color: #ff4444; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; }
-        .btn-clear:hover { background: #ff4444; color: #fff; }
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --bg-dark: #0a0b10;
+        }
 
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        button { padding: 16px; border: none; border-radius: 6px; font-family: 'Orbitron', sans-serif; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-send { background: var(--neon-green); color: #000; }
-        .btn-mic { background: transparent; color: var(--neon-blue); border: 2px solid var(--neon-blue); }
-        .listening { background: #ff4444 !important; color: white !important; border-color: #ff4444 !important; }
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #terminal {
+            width: 80%;
+            max-width: 600px;
+            height: 300px;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow-y: auto;
+            font-size: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .user-text { color: #ff4d4d; font-style: italic; }
+        .tutor-text { color: var(--neon-blue); font-weight: bold; }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 2px solid var(--neon-blue);
+            background: transparent;
+            color: var(--neon-blue);
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        #btn-start { grid-column: span 2; border-color: #39ff14; color: #39ff14; }
+        #btn-start:hover { background: #39ff14; box-shadow: 0 0 20px #39ff14; }
+
+        #btn-report { 
+            grid-column: span 2; 
+            border-color: var(--neon-pink); 
+            color: var(--neon-pink); 
+            display: none; 
+        }
+        #btn-report:hover { background: var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink); }
+
+        .active-rec { animation: pulse 1.5s infinite; border-color: red !important; color: red !important; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="terminal">
-    <div id="start-overlay">
-        <button class="btn-big-start" onclick="initGame()">START MISSION</button>
+    <h1 style="color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue);">MISSION CONTROL: SPEAKING TUTOR</h1>
+
+    <div id="terminal">Welcome, recruit. Press START MISSION to begin briefing.</div>
+
+    <div class="controls">
+        <button id="btn-start" onclick="startMission()">🚀 Start Mission</button>
+        <button id="btn-rec" onclick="toggleRec()">🎤 Rec</button>
+        <button id="btn-del" onclick="deleteWord()">✖ Delete Word</button>
+        <button id="btn-send" onclick="sendData()">📡 Send Data</button>
+        <button id="btn-report" onclick="getReport()">📊 Get Final Report</button>
     </div>
 
-    <h1>> TECH_QUEST_</h1>
-    <div id="screen">SYSTEM READY...</div>
-    
-    <div class="input-container">
-        <input type="text" id="user-input" placeholder="Trascrizione..." autofocus>
-        <button class="btn-clear" onclick="backspace()" title="Cancella parola">DEL</button>
-    </div>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk3gOiG-ZjkeO7q7va-Ewo_p46k9Y1jLzu8q8jHV7BvjRHrQm-6iKh1KFr8cICsAnU/exec";
+        const terminal = document.getElementById('terminal');
+        let recognition;
+        let isRecording = false;
+        let transcriptBuffer = "";
+        let currentLevelCount = 0;
 
-    <div class="grid">
-        <button class="btn-send" onclick="send()">[SEND / INVIO]</button>
-        <button class="btn-mic" id="mic-btn">[VOICE OFF]</button>
-    </div>
-</div>
+        // Configurazione Sintesi Vocale British
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            const voices = window.speechSynthesis.getVoices();
+            msg.voice = voices.find(v => v.lang.includes('en-GB')) || voices[0];
+            msg.rate = 0.9;
+            window.speechSynthesis.speak(msg);
+        }
 
-<script>
-    const url = "https://script.google.com/macros/s/AKfycbxRqDj7pNFwjGUGqVqMbsjjE2Ky9ACEm83oRJGo38m0sTw6Ju-UMCX5opa1THTqy5eC/exec";
-    const input = document.getElementById('user-input');
-    const screen = document.getElementById('screen');
-    const micBtn = document.getElementById('mic-btn');
-    const overlay = document.getElementById('start-overlay');
-    
-    let isAutoMic = true;
+        // Configurazione Riconoscimento Vocale
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-GB';
 
-    // Funzione per cancellare l'ultima parola
-    function backspace() {
-        let words = input.value.trim().split(" ");
-        words.pop(); 
-        input.value = words.join(" ");
-    }
+            recognition.onresult = (event) => {
+                const result = event.results[event.results.length - 1][0].transcript;
+                transcriptBuffer += " " + result;
+                updateTerminal();
+            };
+        }
 
-    function speak(text, callback) {
-        window.speechSynthesis.cancel();
-        let cleanText = text.replace(/[-_*🚀✅❌🏁🎊]/g, ' ').replace(/\s+/g, ' ').trim();
-        const msg = new SpeechSynthesisUtterance(cleanText);
-        const voices = window.speechSynthesis.getVoices();
-        const britishVoice = voices.find(v => v.lang === 'en-GB' || v.lang.includes('GB'));
-        if (britishVoice) msg.voice = britishVoice;
-        msg.lang = 'en-GB';
-        msg.rate = 0.9;
-        msg.onend = () => { if(callback) callback(); };
-        window.speechSynthesis.speak(msg);
-    }
+        function updateTerminal(customTutor) {
+            let tutorHTML = customTutor ? `<div class="tutor-text">${customTutor}</div>` : "";
+            terminal.innerHTML = tutorHTML + `<div class="user-text">> ${transcriptBuffer}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
 
-    function initGame() {
-        overlay.style.display = 'none';
-        window.speechSynthesis.getVoices();
-        speak("System online. Welcome agent. Initializing level one.", () => { send("start"); });
-    }
+        function startMission() {
+            transcriptBuffer = "";
+            fetch(`${SCRIPT_URL}?testo=reset`)
+                .then(res => res.json())
+                .then(data => {
+                    terminal.innerHTML = `<div class="tutor-text">${data.text}</div>`;
+                    speak(data.text);
+                });
+        }
 
-    async function send(val) {
-        let text = val || input.value.trim();
-        if(!text) return;
-        let apiText = text.toLowerCase() === "start" ? "reset" : text;
-        screen.innerText = "QUERYING CORE...";
-        input.value = ""; 
+        function toggleRec() {
+            const btn = document.getElementById('btn-rec');
+            if (!isRecording) {
+                recognition.start();
+                btn.classList.add('active-rec');
+                isRecording = true;
+            } else {
+                recognition.stop();
+                btn.classList.remove('active-rec');
+                isRecording = false;
+            }
+        }
 
-        try {
-            const r = await fetch(url + "?testo=" + encodeURIComponent(apiText));
-            const d = await r.json();
-            screen.innerHTML = d.text.replace(/\n/g, "<br>");
-            speak(d.text, () => { if(isAutoMic) startListening(); });
-        } catch(e) { screen.innerText = "CONNECTION ERROR."; }
-    }
+        function deleteWord() {
+            let words = transcriptBuffer.trim().split(" ");
+            words.pop();
+            transcriptBuffer = words.join(" ");
+            updateTerminal();
+        }
 
-    const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    rec.lang = 'en-US';
-    rec.interimResults = true;
+        function sendData() {
+            if (!transcriptBuffer.trim()) return;
+            const tempText = transcriptBuffer;
+            transcriptBuffer = "Sending to Mission Control...";
+            updateTerminal();
 
-    rec.onresult = (e) => {
-        let transcript = e.results[0][0].transcript;
-        input.value = transcript; 
-    };
+            fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(tempText)}`)
+                .then(res => res.json())
+                .then(data => {
+                    transcriptBuffer = "";
+                    updateTerminal(data.text);
+                    speak(data.text);
+                    
+                    // Mostra il tasto Report dopo il livello 2 (20 domande)
+                    currentLevelCount++;
+                    if (currentLevelCount >= 20) {
+                        document.getElementById('btn-report').style.display = 'block';
+                    }
+                });
+        }
 
-    rec.onend = () => {
-        micBtn.classList.remove('listening');
-        micBtn.innerText = "[VOICE OFF]";
-    };
-
-    function startListening() {
-        input.value = ""; 
-        micBtn.classList.add('listening');
-        micBtn.innerText = "[LISTENING...]";
-        rec.start();
-    }
-
-    micBtn.onclick = () => {
-        isAutoMic = !isAutoMic;
-        if(isAutoMic) startListening(); else rec.stop();
-    };
-
-    input.onkeypress = (e) => { if(e.key === 'Enter') send(); };
-    window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
-</script>
+        function getReport() {
+            fetch(`${SCRIPT_URL}?testo=report`)
+                .then(res => res.json())
+                .then(data => {
+                    terminal.innerHTML = `<div class="tutor-text">${data.text}</div>`;
+                    speak(data.text);
+                });
+        }
+    </script>
 </body>
 </html>
