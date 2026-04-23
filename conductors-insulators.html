@@ -5,14 +5,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
   <style>
     body { background: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .card { background: #1e293b; padding: 25px; border-radius: 20px; border: 2px solid #22d3ee; width: 90%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .card { background: #1e293b; padding: 25px; border-radius: 20px; border: 2px solid #22d3ee; width: 90%; max-width: 450px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     #ov { position: absolute; inset: 0; background: #0f172a; z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 18px; }
     button { cursor: pointer; font-family: 'Orbitron'; border: none; transition: 0.3s; }
     .nav { display: flex; gap: 8px; margin-bottom: 20px; }
     .btn-l { flex: 1; padding: 12px; background: #334155; color: white; font-size: 11px; border-radius: 8px; }
     .btn-l.active { background: #22d3ee; color: #0f172a; box-shadow: 0 0 10px #22d3ee; }
     #disp { background: #0f172a; padding: 20px; border-radius: 12px; min-height: 100px; text-align: left; border-left: 5px solid #22d3ee; margin-bottom: 20px; font-size: 16px; line-height: 1.5; color: #e2e8f0; }
-    #pre { color: #22d3ee; font-size: 12px; min-height: 20px; margin-bottom: 20px; font-style: italic; opacity: 0.8; }
+    #pre { color: #22d3ee; font-size: 12px; min-height: 20px; margin-bottom: 20px; font-style: italic; }
     #mic { width: 75px; height: 75px; border-radius: 50%; background: #22d3ee; font-size: 32px; margin-bottom: 20px; margin-left: auto; margin-right: auto; display: flex; align-items: center; justify-content: center; }
     #mic.rec { background: #f43f5e; box-shadow: 0 0 20px #f43f5e; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
@@ -30,7 +30,7 @@
       <button id="l2" class="btn-l" onclick="setL(2)">LEVEL 2</button>
       <button id="l3" class="btn-l" onclick="setL(3)">LEVEL 3</button>
     </div>
-    <div id="disp">System Online. Select a mission level.</div>
+    <div id="disp">System Standby. Select Mission.</div>
     <div id="pre">Transmission: ...</div>
     <button id="mic" onclick="tgl()">🎤</button>
     <div style="display:flex; gap:10px;">
@@ -54,7 +54,7 @@
     window.speechSynthesis.speak(m);
   }
 
-  function start() { document.getElementById('ov').style.display = 'none'; spk("Welcome Agent. Select a level."); }
+  function start() { document.getElementById('ov').style.display = 'none'; spk("System initialized. Select level."); }
 
   function setL(n) {
     document.querySelectorAll('.btn-l').forEach(b => b.classList.remove('active'));
@@ -83,7 +83,6 @@
 
   function send() {
     const d = document.getElementById('disp');
-    // Prende il testo finale, pulendolo da prefissi inutili
     let txt = trans || document.getElementById('pre').innerText.replace("Transmission: ","");
     if(!txt || txt === "...") return;
     
