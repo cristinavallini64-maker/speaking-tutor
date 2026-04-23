@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speaking Mission</title>
+    <title>Speaking Mission - British Tutor</title>
     <style>
         :root {
             --neon-blue: #00f3ff;
@@ -14,7 +14,7 @@
         body {
             background-color: var(--bg-dark);
             color: white;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; margin: 0; overflow: hidden;
         }
@@ -35,7 +35,6 @@
         }
         button:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
         #btn-start { grid-column: span 2; border-color: #39ff14; color: #39ff14; }
-        #btn-start:hover { background: #39ff14; color: black; }
         #btn-report { grid-column: span 2; border-color: var(--neon-pink); color: var(--neon-pink); display: none; }
         .active-rec { animation: pulse 1.5s infinite; border-color: red !important; color: red !important; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
@@ -43,7 +42,7 @@
 </head>
 <body onkeydown="return false;">
 
-    <h1 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--neon-blue); letter-spacing: 2px;">SPEAKING MISSION</h1>
+    <h1 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--neon-blue);">SPEAKING MISSION</h1>
 
     <div id="terminal"></div>
 
@@ -56,17 +55,16 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk3gOiG-ZjkeO7q7va-Ewo_p46k9Y1jLzu8q8jHV7BvjRHrQm-6iKh1KFr8cICsAnU/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5AcqJxrQuX-irvbOYaRMDQSKIJ7OvXgkNigeb-LNpMAtUoARa9RxRWuIuYdWCYHNb/exec";
         const terminal = document.getElementById('terminal');
         let recognition;
         let isRecording = false;
         let transcriptBuffer = "";
-        let currentLevelCount = 0;
         let britishVoice = null;
 
         function loadVoices() {
             const voices = window.speechSynthesis.getVoices();
-            britishVoice = voices.find(v => v.name.includes('UK') || v.name.includes('Great Britain') || v.lang === 'en-GB');
+            britishVoice = voices.find(v => v.name.includes('UK') || v.lang === 'en-GB');
         }
         window.speechSynthesis.onvoiceschanged = loadVoices;
         loadVoices();
@@ -100,7 +98,7 @@
 
         function startMission() {
             transcriptBuffer = "";
-            terminal.innerHTML = "<div class='tutor-text'>Establishing connection...</div>";
+            terminal.innerHTML = "<div class='tutor-text'>Connecting...</div>";
             fetch(`${SCRIPT_URL}?testo=reset`)
                 .then(res => res.json())
                 .then(data => {
@@ -130,9 +128,9 @@
         }
 
         function sendData() {
-            if (!transcriptBuffer.trim() || transcriptBuffer.includes("Processing")) return;
+            if (!transcriptBuffer.trim() || transcriptBuffer === "Processing...") return;
             const tempText = transcriptBuffer;
-            transcriptBuffer = "Processing data...";
+            transcriptBuffer = "Processing...";
             updateTerminal();
 
             fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(tempText)}`)
@@ -141,8 +139,7 @@
                     transcriptBuffer = "";
                     updateTerminal(data.text);
                     speak(data.text);
-                    currentLevelCount++;
-                    if (currentLevelCount >= 20) {
+                    if (data.text.includes("LVL 2")) {
                         document.getElementById('btn-report').style.display = 'block';
                     }
                 });
@@ -157,7 +154,7 @@
                 });
         }
         
-        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
 </body>
 </html>
