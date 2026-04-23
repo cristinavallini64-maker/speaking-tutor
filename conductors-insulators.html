@@ -57,11 +57,28 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5AcqJxrQuX-irvbOYaRMDQSKIJ7OvXgkNigeb-LNpMAtUoARa9RxRWuIuYdWCYHNb/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWnT_nyuCGb00_GADg_vAOOz-iCx6N_SPr-1-7zuY8u0TVupUvhh68Lx83mCipVsiX/exec";
         let recognition;
         let isRecording = false;
         let transcriptBuffer = "";
-        let currentLvl = 0;
+
+        // Caricamento voce British
+        let britishVoice = null;
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            britishVoice = voices.find(v => v.lang === 'en-GB' || v.name.includes('UK'));
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance(text);
+            if (britishVoice) msg.voice = britishVoice;
+            msg.lang = 'en-GB';
+            msg.rate = 0.9;
+            window.speechSynthesis.speak(msg);
+        }
 
         if ('webkitSpeechRecognition' in window) {
             recognition = new webkitSpeechRecognition();
@@ -73,34 +90,23 @@
             };
         }
 
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'en-GB';
-            msg.rate = 0.9;
-            window.speechSynthesis.speak(msg);
-        }
-
         function updateTerminal(tutorMsg) {
             const term = document.getElementById('terminal');
-            if (tutorMsg) {
-                term.innerHTML = `<div class="tutor-text">${tutorMsg}</div><div class="user-text">> ${transcriptBuffer}</div>`;
-            } else {
-                const tutorCurrent = term.querySelector('.tutor-text').innerText;
-                term.innerHTML = `<div class="tutor-text">${tutorCurrent}</div><div class="user-text">> ${transcriptBuffer}</div>`;
-            }
+            const currentTutor = tutorMsg || term.querySelector('.tutor-text').innerText;
+            term.innerHTML = `<div class="tutor-text">${currentTutor}</div><div class="user-text">> ${transcriptBuffer}</div>`;
             term.scrollTop = term.scrollHeight;
         }
 
         function selectLevel(lvl) {
-            currentLvl = lvl;
             transcriptBuffer = "";
-            document.getElementById('terminal').innerHTML = "<div class='tutor-text'>Loading Level " + lvl + "...</div>";
+            updateTerminal("Loading Level " + lvl + "...");
             fetch(`${SCRIPT_URL}?testo=startLvl${lvl}`)
                 .then(res => res.json())
                 .then(data => {
                     updateTerminal(data.text);
                     speak(data.text);
+                    // Reset visibilità report al cambio livello
+                    document.getElementById('btn-report').style.display = 'none';
                 });
         }
 
@@ -137,7 +143,7 @@
                     updateTerminal(data.text);
                     speak(data.text);
                     
-                    // Mostra il report solo se il server conferma la fine del Livello 2
+                    // Mostra il report solo se il server conferma showReport: true
                     if (data.showReport === true) {
                         document.getElementById('btn-report').style.display = 'block';
                     }
