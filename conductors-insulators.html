@@ -3,68 +3,116 @@
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; text-align: center; background: #f4f7f6; padding: 20px; }
-    .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-    .btn-lvl { background: #555; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 10px; cursor: pointer; font-size: 14px; }
-    .btn-lvl:hover { background: #333; }
-    .btn-mic { background: #007bff; color: white; width: 100px; height: 100px; border-radius: 50%; font-size: 40px; border: none; margin: 25px 0; cursor: pointer; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
-    #response { margin-top: 20px; font-weight: bold; min-height: 80px; border-top: 1px solid #eee; padding-top: 15px; white-space: pre-line; }
-    #status { color: #888; font-size: 13px; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+    .card { background: #1e293b; width: 90%; max-width: 400px; padding: 25px; border-radius: 25px; border: 1px solid #334155; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    
+    .lvl-nav { display: flex; gap: 8px; margin-bottom: 20px; }
+    .btn-lvl { flex: 1; background: #334155; color: #94a3b8; border: none; padding: 12px 5px; border-radius: 12px; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; transition: 0.3s; }
+    .btn-lvl.active { background: #38bdf8; color: #0f172a; box-shadow: 0 0 15px rgba(56,189,248,0.4); }
+
+    #response { background: rgba(15,23,42,0.6); padding: 18px; border-radius: 15px; margin-bottom: 15px; min-height: 80px; border-left: 4px solid #38bdf8; line-height: 1.5; text-align: left; font-size: 15px; }
+
+    .btn-mic { width: 85px; height: 85px; border-radius: 50%; background: #38bdf8; border: none; font-size: 35px; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
+    .btn-mic.listening { background: #ef4444; transform: scale(1.1); box-shadow: 0 0 20px #ef4444; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+    #preview-box { background: #0f172a; border: 1px solid #334155; padding: 15px; border-radius: 12px; min-height: 40px; margin-bottom: 15px; color: #38bdf8; font-size: 15px; font-weight: 500; text-align: center; }
+
+    .controls { display: flex; gap: 10px; }
+    .btn-action { flex: 1; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; font-family: 'Orbitron'; transition: 0.2s; }
+    .btn-clear { background: #475569; color: white; }
+    .btn-send { background: #22c55e; color: white; }
+    .btn-action:active { transform: scale(0.95); }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h3>⚡ Tech Quiz Selector</h3>
-  
-  <div style="margin-bottom: 15px;">
-    <button class="btn-lvl" onclick="setLevel(1)">Level 1</button>
-    <button class="btn-lvl" onclick="setLevel(2)">Level 2</button>
-    <button class="btn-lvl" onclick="setLevel(3)">Level 3</button>
+<div class="card">
+  <div class="lvl-nav">
+    <button id="l1" class="btn-lvl" onclick="setLevel(1)">LVL 1</button>
+    <button id="l2" class="btn-lvl" onclick="setLevel(2)">LVL 2</button>
+    <button id="l3" class="btn-lvl" onclick="setLevel(3)">LVL 3</button>
   </div>
 
-  <div id="status">Click a level to start</div>
-  <button id="micBtn" class="btn-mic">🎤</button>
-  
-  <div id="response">Choose your mission!</div>
+  <div id="response">Select Mission...</div>
+
+  <div class="mic-zone">
+    <button id="micBtn" class="btn-mic">🎤</button>
+    <div id="preview-box">Tap Mic and speak...</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-action btn-clear" onclick="deleteLastWord()">🗑️ CLEAR</button>
+    <button class="btn-action btn-send" onclick="confirmSend()">🚀 SEND</button>
+  </div>
 </div>
 
 <script>
-  // SOSTITUISCI CON IL TUO URL
-  const SCRIPT_URL = "https://script.google.com/macros/s/INSERISCI_QUI_URL/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/INSERISCI_URL_QUI/exec";
   const userUID = "std_" + Math.random().toString(36).substr(2, 5);
+  let currentTranscript = "";
 
   const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = 'en-US';
+  recognition.lang = 'en-GB'; // Ascolta con orecchio britannico
 
-  // FUNZIONE PER I BOTTONI
+  function speak(txt) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(txt);
+    utterance.lang = 'en-GB'; // ACCENTO BRITISH
+    utterance.rate = 0.85; 
+    
+    // Prova a forzare la voce maschile o femminile British se disponibile
+    const voices = window.speechSynthesis.getVoices();
+    const ukVoice = voices.find(v => v.lang === 'en-GB' || v.name.includes('UK'));
+    if (ukVoice) utterance.voice = ukVoice;
+    
+    window.speechSynthesis.speak(utterance);
+  }
+
   function setLevel(lvl) {
-    document.getElementById('status').innerText = "Starting Level " + lvl + "...";
+    document.querySelectorAll('.btn-lvl').forEach(b => b.classList.remove('active'));
+    document.getElementById('l'+lvl).classList.add('active');
     fetch(`${SCRIPT_URL}?action=set_level&level=${lvl}&uid=${userUID}`)
-      .then(r => r.json())
-      .then(data => {
+      .then(r => r.json()).then(data => {
         document.getElementById('response').innerText = data.text;
-        document.getElementById('status').innerText = "Listening for answers...";
+        speak(data.text);
       });
   }
 
-  // FUNZIONE PER IL MICROFONO
-  micBtn.onclick = () => {
+  document.getElementById('micBtn').onclick = () => {
     recognition.start();
-    document.getElementById('status').innerText = "Listening...";
+    document.getElementById('micBtn').classList.add('listening');
   };
 
   recognition.onresult = (event) => {
-    const text = event.results[0][0].transcript;
-    document.getElementById('status').innerText = "Processing...";
-    fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(text)}&uid=${userUID}`)
-      .then(r => r.json())
-      .then(data => {
-        document.getElementById('response').innerText = data.text;
-        document.getElementById('status').innerText = "Ready";
-      });
+    const newText = event.results[0][0].transcript;
+    currentTranscript = (currentTranscript + " " + newText).trim();
+    document.getElementById('preview-box').innerText = currentTranscript;
+    document.getElementById('micBtn').classList.remove('listening');
   };
+
+  // CANCELLA 1 PAROLA ALLA VOLTA
+  function deleteLastWord() {
+    if (!currentTranscript) return;
+    let words = currentTranscript.split(" ");
+    words.pop();
+    currentTranscript = words.join(" ");
+    document.getElementById('preview-box').innerText = currentTranscript || "Tap Mic and speak...";
+  }
+
+  function confirmSend() {
+    if(!currentTranscript) return;
+    document.getElementById('response').innerText = "System checking...";
+    fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(currentTranscript)}&uid=${userUID}`)
+      .then(r => r.json()).then(data => {
+        document.getElementById('response').innerText = data.text;
+        speak(data.text); // PARLA SEMPRE PER IL FEEDBACK
+        currentTranscript = "";
+        document.getElementById('preview-box').innerText = "Tap Mic and speak...";
+      });
+  }
 </script>
 
 </body>
