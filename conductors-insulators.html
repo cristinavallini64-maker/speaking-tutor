@@ -1,100 +1,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .card { width: 90%; max-width: 400px; background: #1e293b; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-    .nav { display: flex; gap: 5px; margin-bottom: 20px; }
-    .nav button { flex: 1; padding: 10px; border: none; border-radius: 5px; background: #334155; color: #94a3b8; cursor: pointer; font-weight: bold; }
-    .nav button.active { background: #3b82f6; color: white; }
-    #msg { min-height: 100px; font-size: 1.2rem; margin-bottom: 20px; line-height: 1.4; color: #f1f5f9; }
-    .mic { width: 80px; height: 80px; border-radius: 50%; border: none; background: #3b82f6; color: white; font-size: 2rem; cursor: pointer; margin-bottom: 10px; }
-    .mic.on { background: #ef4444; animation: pulse 1s infinite; }
-    @keyframes pulse { 50% { opacity: 0.5; } }
-    #buffer { font-size: 0.8rem; color: #64748b; margin-bottom: 20px; min-height: 1.2rem; }
-    .actions { display: flex; gap: 10px; }
-    .btn { flex: 1; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-    .clr { background: #475569; color: white; }
-    .snd { background: #10b981; color: white; }
-    #start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: 15px; }
-    #start-overlay button { padding: 20px 40px; font-size: 1.5rem; border-radius: 50px; border: none; background: #10b981; color: white; cursor: pointer; font-weight: bold; }
+    :root { --cyan: #22d3ee; --red: #f43f5e; --green: #22c55e; --dark: #0f172a; --card: #1e293b; }
+    body { margin: 0; background: var(--dark); color: white; font-family: 'Rajdhani', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+    .container { background: var(--card); width: 90%; max-width: 450px; padding: 30px; border-radius: 30px; border: 2px solid var(--cyan); box-shadow: 0 0 30px rgba(34,211,238,0.2); text-align: center; position: relative; }
+    #overlay { position: absolute; inset: 0; background: var(--dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 28px; }
+    .start-btn { padding: 20px 60px; font-size: 28px; font-family: 'Orbitron'; background: var(--cyan); color: var(--dark); border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 0 20px var(--cyan); }
+    .nav { display: flex; gap: 10px; margin-bottom: 20px; }
+    .lvl-btn { flex: 1; padding: 12px; background: #334155; color: #94a3b8; border: none; border-radius: 12px; font-family: 'Orbitron'; font-size: 11px; cursor: pointer; }
+    .lvl-btn.active { background: var(--cyan); color: var(--dark); box-shadow: 0 0 15px var(--cyan); }
+    #display { background: var(--dark); padding: 20px; border-radius: 15px; min-height: 120px; margin-bottom: 20px; text-align: left; border-left: 5px solid var(--cyan); font-size: 18px; }
+    #preview { color: var(--cyan); min-height: 24px; margin-bottom: 20px; font-size: 16px; font-style: italic; }
+    #mic-btn { width: 80px; height: 80px; border-radius: 50%; background: var(--cyan); border: none; font-size: 35px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px rgba(34,211,238,0.4); }
+    #mic-btn.listening { background: var(--red); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% {box-shadow: 0 0 0 0px rgba(244,63,94,0.7);} 70% {box-shadow: 0 0 0 20px rgba(244,63,94,0);} 100% {box-shadow: 0 0 0 0px rgba(244,63,94,0);} }
+    .footer { display: flex; gap: 15px; }
+    .action-btn { flex: 1; padding: 16px; border-radius: 15px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; color: white; text-transform: uppercase; }
+    .btn-clear { background: #475569; }
+    .btn-send { background: var(--green); }
   </style>
 </head>
 <body>
-
-<div class="card" style="position: relative;">
-  <div id="start-overlay"><button onclick="startApp()">START MISSION</button></div>
-  
-  <div class="nav">
-    <button id="l1" onclick="load(1)">LVL 1</button>
-    <button id="l2" onclick="load(2)">LVL 2</button>
-    <button id="l3" onclick="load(3)">LVL 3</button>
+  <div class="container">
+    <div id="overlay">
+      <h1 style="font-family: 'Orbitron'; color: var(--cyan); margin-bottom: 40px;">TECH MISSION</h1>
+      <button class="start-btn" onclick="begin()">START</button>
+    </div>
+    <div class="nav">
+      <button id="lvl1" class="lvl-btn" onclick="loadLevel(1)">LVL 1</button>
+      <button id="lvl2" class="lvl-btn" onclick="loadLevel(2)">LVL 2</button>
+      <button id="lvl3" class="lvl-btn" onclick="loadLevel(3)">LVL 3</button>
+    </div>
+    <div id="display">Select a mission level, Agent.</div>
+    <div id="preview">Transmission: ...</div>
+    <button id="mic-btn" onclick="toggleMic()">🎤</button>
+    <div class="footer">
+      <button class="action-btn btn-clear" onclick="clearWord()">🗑️ Clear Word</button>
+      <button class="action-btn btn-send" onclick="sendAnswer()">🚀 Send</button>
+    </div>
   </div>
-  <div id="msg">Initializing...</div>
-  <button id="mic" class="mic" onclick="listen()">🎤</button>
-  <div id="buffer">...</div>
-  <div class="actions">
-    <button class="btn clr" onclick="reset()">Clear</button>
-    <button class="btn snd" onclick="send()">Submit</button>
-  </div>
-</div>
-
-<script>
-  const URL = "https://script.google.com/macros/s/AKfycbyR66K5x89N_2H37bJmYpW0xN_YAnvF-Gf30HInEwLh_6GjI6mK9N3zZtXhY0L9N_Y/exec";
-  const UID = "USER_" + Date.now();
-  let transcript = "";
-
-  const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  rec.lang = 'en-GB';
-
-  function say(t) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(t);
-    u.lang = 'en-GB'; u.rate = 0.9;
-    window.speechSynthesis.speak(u);
-  }
-
-  function startApp() {
-    document.getElementById('start-overlay').style.display = 'none';
-    load(1);
-  }
-
-  function load(lvl) {
-    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById('l'+lvl).classList.add('active');
-    document.getElementById('msg').innerText = "Loading...";
-    fetch(`${URL}?action=set_level&level=${lvl}&uid=${UID}`)
-      .then(r => r.json()).then(d => {
-        document.getElementById('msg').innerText = d.text;
-        say(d.text);
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0lRQBSzadKSxvew_LWzVurjslmx1dDuQwK0A9oBe7G1DI1IpieWuL_MM_G7P37G0/exec";
+    const uid = "std_" + Math.random().toString(36).substr(2, 5);
+    let transcript = "";
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-GB';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    function speak(t) {
+      window.speechSynthesis.cancel();
+      const m = new SpeechSynthesisUtterance(t);
+      m.lang = 'en-GB'; m.rate = 0.9; window.speechSynthesis.speak(m);
+    }
+    function begin() { document.getElementById('overlay').style.display = 'none'; speak("System online. Choose your level."); }
+    function loadLevel(n) {
+      document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('lvl'+n).classList.add('active');
+      fetch(`${SCRIPT_URL}?action=set_level&level=${n}&uid=${uid}`).then(r => r.json()).then(d => {
+        document.getElementById('display').innerText = d.text; speak(d.text);
       });
-  }
-
-  function listen() {
-    rec.start(); document.getElementById('mic').classList.add('on');
-  }
-
-  rec.onresult = (e) => {
-    transcript = (transcript + " " + e.results[0][0].transcript).trim();
-    document.getElementById('buffer').innerText = transcript;
-    document.getElementById('mic').classList.remove('on');
-  };
-
-  function reset() { transcript = ""; document.getElementById('buffer').innerText = "..."; }
-
-  function send() {
-    if(!transcript) return;
-    document.getElementById('msg').innerText = "Analyzing...";
-    fetch(`${URL}?testo=${encodeURIComponent(transcript)}&uid=${UID}`)
-      .then(r => r.json()).then(d => {
-        document.getElementById('msg').innerText = d.text;
-        say(d.text);
-        reset();
+    }
+    function toggleMic() {
+      const b = document.getElementById('mic-btn');
+      if (b.classList.contains('listening')) { recognition.stop(); b.classList.remove('listening'); }
+      else { recognition.start(); b.classList.add('listening'); }
+    }
+    recognition.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; ++i) {
+        if (e.results[i].isFinal) transcript = (transcript + " " + e.results[i][0].transcript).trim();
+        else interim += e.results[i][0].transcript;
+      }
+      document.getElementById('preview').innerText = "Transmission: " + transcript + " " + interim;
+    };
+    function clearWord() {
+      let w = transcript.split(" "); w.pop(); transcript = w.join(" ");
+      document.getElementById('preview').innerText = "Transmission: " + (transcript || "...");
+    }
+    function sendAnswer() {
+      if(!transcript) return;
+      document.getElementById('display').innerText = "Analyzing...";
+      recognition.stop(); document.getElementById('mic-btn').classList.remove('listening');
+      fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(transcript)}&uid=${uid}`).then(r => r.json()).then(d => {
+        document.getElementById('display').innerText = d.text; speak(d.text);
+        transcript = ""; document.getElementById('preview').innerText = "...";
       });
-  }
-</script>
-
+    }
+  </script>
 </body>
 </html>
