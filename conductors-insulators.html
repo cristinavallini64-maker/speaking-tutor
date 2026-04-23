@@ -3,139 +3,124 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500&display=swap" rel="stylesheet">
   <style>
-    :root { --cyan: #22d3ee; --red: #f43f5e; --green: #22c55e; --dark: #0f172a; --card: #1e293b; }
-    body { margin: 0; background: var(--dark); color: white; font-family: 'Rajdhani', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-    .container { background: var(--card); width: 90%; max-width: 450px; padding: 30px; border-radius: 30px; border: 2px solid var(--cyan); box-shadow: 0 0 30px rgba(34,211,238,0.2); text-align: center; position: relative; }
-    #overlay { position: absolute; inset: 0; background: var(--dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 28px; }
-    .start-btn { padding: 20px 60px; font-size: 28px; font-family: 'Orbitron'; background: var(--cyan); color: var(--dark); border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 0 20px var(--cyan); }
-    .nav { display: flex; gap: 10px; margin-bottom: 20px; }
-    .lvl-btn { flex: 1; padding: 12px; background: #334155; color: #94a3b8; border: none; border-radius: 12px; font-family: 'Orbitron'; font-size: 11px; cursor: pointer; }
-    .lvl-btn.active { background: var(--cyan); color: var(--dark); box-shadow: 0 0 15px var(--cyan); }
-    #display { background: var(--dark); padding: 20px; border-radius: 15px; min-height: 120px; margin-bottom: 20px; text-align: left; border-left: 5px solid var(--cyan); font-size: 18px; line-height: 1.4; }
-    #preview { color: var(--cyan); min-height: 24px; margin-bottom: 20px; font-size: 16px; font-style: italic; }
-    #mic-btn { width: 80px; height: 80px; border-radius: 50%; background: var(--cyan); border: none; font-size: 35px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px rgba(34,211,238,0.4); }
-    #mic-btn.listening { background: var(--red); animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0% {box-shadow: 0 0 0 0px rgba(244,63,94,0.7);} 70% {box-shadow: 0 0 0 20px rgba(244,63,94,0);} 100% {box-shadow: 0 0 0 0px rgba(244,63,94,0);} }
-    .footer { display: flex; gap: 15px; }
-    .action-btn { flex: 1; padding: 16px; border-radius: 15px; border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; color: white; text-transform: uppercase; font-size: 12px; }
-    .btn-clear { background: #475569; }
-    .btn-send { background: var(--green); }
+    :root { --c: #22d3ee; --r: #f43f5e; --g: #22c55e; --b: #0f172a; }
+    body { margin: 0; background: var(--b); color: white; font-family: 'Rajdhani', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .box { background: #1e293b; width: 90%; max-width: 400px; padding: 25px; border-radius: 25px; border: 2px solid var(--c); text-align: center; position: relative; }
+    #ov { position: absolute; inset: 0; background: var(--b); z-index: 10; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 23px; }
+    .btn { cursor: pointer; border: none; font-family: 'Orbitron'; color: white; text-transform: uppercase; }
+    .s-btn { padding: 15px 40px; font-size: 20px; background: var(--c); color: var(--b); border-radius: 30px; }
+    .nav { display: flex; gap: 8px; margin-bottom: 15px; }
+    .l-btn { flex: 1; padding: 10px; background: #334155; border-radius: 8px; font-size: 10px; }
+    .l-btn.active { background: var(--c); color: var(--b); }
+    #disp { background: var(--b); padding: 15px; border-radius: 12px; min-height: 100px; text-align: left; border-left: 4px solid var(--c); margin-bottom: 15px; }
+    #pre { color: var(--c); font-size: 14px; min-height: 20px; margin-bottom: 15px; font-style: italic; }
+    #mic { width: 70px; height: 70px; border-radius: 50%; background: var(--c); font-size: 30px; margin-bottom: 15px; transition: 0.3s; }
+    #mic.rec { background: var(--r); box-shadow: 0 0 15px var(--r); }
+    .foot { display: flex; gap: 10px; }
+    .act { flex: 1; padding: 12px; border-radius: 10px; font-size: 12px; }
+    .c-btn { background: #475569; }
+    .ok-btn { background: var(--g); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div id="overlay">
-      <h1 style="font-family: 'Orbitron'; color: var(--cyan); margin-bottom: 40px;">TECH MISSION</h1>
-      <button class="start-btn" onclick="begin()">START</button>
-    </div>
-
+  <div class="box">
+    <div id="ov"><button class="btn s-btn" onclick="start()">START</button></div>
     <div class="nav">
-      <button id="lvl1" class="lvl-btn" onclick="loadLevel(1)">LVL 1</button>
-      <button id="lvl2" class="lvl-btn" onclick="loadLevel(2)">LVL 2</button>
-      <button id="lvl3" class="lvl-btn" onclick="loadLevel(3)">LVL 3</button>
+      <button id="lvl1" class="btn l-btn" onclick="setL(1)">LVL 1</button>
+      <button id="lvl2" class="btn l-btn" onclick="setL(2)">LVL 2</button>
+      <button id="lvl3" class="btn l-btn" onclick="setL(3)">LVL 3</button>
     </div>
-
-    <div id="display">Select a mission level, Agent.</div>
-    <div id="preview">Transmission: ...</div>
-
-    <button id="mic-btn" onclick="toggleMic()">🎤</button>
-
-    <div class="footer">
-      <button class="action-btn btn-clear" onclick="clearWord()">🗑️ Clear Word</button>
-      <button class="action-btn btn-send" onclick="sendAnswer()">🚀 Send</button>
+    <div id="disp">System Ready.</div>
+    <div id="pre">Transmission: ...</div>
+    <button id="mic" class="btn" onclick="tgl()">🎤</button>
+    <div class="footer foot">
+      <button class="btn act c-btn" onclick="del()">🗑️ Clear</button>
+      <button class="btn act ok-btn" onclick="send()">🚀 Send</button>
     </div>
   </div>
 
-  <script>
-    // URL DELLO SCRIPT GIÀ INSERITO
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0lRQBSzadKSxvew_LWzVurjslmx1dDuQwK0A9oBe7G1DI1IpieWuL_MM_G7P37G0/exec";
-    
-    const uid = "std_" + Math.random().toString(36).substr(2, 5);
-    let transcript = "";
-    
-    // Configurazione Riconoscimento Vocale
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'en-GB';
-    recognition.continuous = true;
-    recognition.interimResults = true;
+<script>
+  const URL = "https://script.google.com/macros/s/AKfycbw0lRQBSzadKSxvew_LWzVurjslmx1dDuQwK0A9oBe7G1DI1IpieWuL_MM_G7P37G0/exec";
+  // Genera o recupera ID studente per non perdere memoria
+  let uid = localStorage.getItem('tech_uid') || "std_" + Math.random().toString(36).substr(2,5);
+  localStorage.setItem('tech_uid', uid);
 
-    // Funzione Parlato (British Accent)
-    function speak(t) {
-      window.speechSynthesis.cancel();
-      const m = new SpeechSynthesisUtterance(t);
-      m.lang = 'en-GB'; 
-      m.rate = 0.9; 
-      window.speechSynthesis.speak(m);
-    }
+  let text = "";
+  const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  rec.lang = 'en-GB'; rec.continuous = true; rec.interimResults = true;
 
-    // Funzione Inizio
-    function begin() { 
-      document.getElementById('overlay').style.display = 'none'; 
-      speak("System online. Choose your level to begin the mission."); 
-    }
+  function spk(t) {
+    window.speechSynthesis.cancel();
+    const m = new SpeechSynthesisUtterance(t); m.lang = 'en-GB'; m.rate = 0.9;
+    window.speechSynthesis.speak(m);
+  }
 
-    // Carica Livello
-    function loadLevel(n) {
-      document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('lvl'+n).classList.add('active');
-      fetch(`${SCRIPT_URL}?action=set_level&level=${n}&uid=${uid}`)
-        .then(r => r.json())
-        .then(d => {
-          document.getElementById('display').innerText = d.text; 
-          speak(d.text);
-        });
-    }
-
-    // Controllo Microfono
-    function toggleMic() {
-      const b = document.getElementById('mic-btn');
-      if (b.classList.contains('listening')) { 
-        recognition.stop(); 
-        b.classList.remove('listening'); 
-      } else { 
-        recognition.start(); 
-        b.classList.add('listening'); 
+  function start() { 
+    document.getElementById('ov').style.display = 'none'; 
+    spk("Welcome back Agent. Resuming mission.");
+    // Prova a recuperare dove era rimasto
+    fetch(`${URL}?action=get_status&uid=${uid}`).then(r=>r.json()).then(d=>{
+      if(d.step >= 0) {
+        document.getElementById('disp').innerText = "Mission in progress. Send a message to continue or re-select level.";
       }
-    }
+    });
+  }
 
-    recognition.onresult = (e) => {
-      let interim = "";
-      for (let i = e.resultIndex; i < e.results.length; ++i) {
-        if (e.results[i].isFinal) {
-          transcript = (transcript + " " + e.results[i][0].transcript).trim();
-        } else {
-          interim += e.results[i][0].transcript;
-        }
+  function setL(n) {
+    document.querySelectorAll('.l-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('lvl'+n).classList.add('active');
+    fetch(`${URL}?action=set_level&level=${n}&uid=${uid}`).then(r=>r.json()).then(d=>{
+      document.getElementById('disp').innerText = d.text; spk(d.text);
+    });
+  }
+
+  function tgl() {
+    const b = document.getElementById('mic');
+    if(b.classList.contains('rec')) { rec.stop(); b.classList.remove('rec'); }
+    else { rec.start(); b.classList.add('rec'); }
+  }
+
+  rec.onresult = (e) => {
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; ++i) {
+      if (e.results[i].isFinal) text = (text + " " + e.results[i][0].transcript).trim();
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('pre').innerText = "Transmission: " + text + " " + interim;
+  };
+
+  function del() {
+    let w = text.split(" "); w.pop(); text = w.join(" ");
+    document.getElementById('pre').innerText = "Transmission: " + (text || "...");
+  }
+
+  function send() {
+    if(!text) return;
+    const d = document.getElementById('disp');
+    d.innerText = "Analyzing...";
+    rec.stop(); document.getElementById('mic').classList.remove('rec');
+
+    // Timeout di sicurezza: se dopo 10 secondi non risponde, sblocca
+    const tOut = setTimeout(() => {
+      if(d.innerText === "Analyzing...") {
+        d.innerText = "Connection slow. Please try sending again.";
       }
-      document.getElementById('preview').innerText = "Transmission: " + transcript + " " + interim;
-    };
+    }, 12000);
 
-    // Cancella una parola alla volta
-    function clearWord() {
-      let w = transcript.split(" "); 
-      w.pop(); 
-      transcript = w.join(" ");
-      document.getElementById('preview').innerText = "Transmission: " + (transcript || "...");
-    }
-
-    // Invia Risposta al Tutor
-    function sendAnswer() {
-      if(!transcript) return;
-      document.getElementById('display').innerText = "Analyzing transmission...";
-      recognition.stop(); 
-      document.getElementById('mic-btn').classList.remove('listening');
-
-      fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(transcript)}&uid=${uid}`)
-        .then(r => r.json())
-        .then(d => {
-          document.getElementById('display').innerText = d.text; 
-          speak(d.text);
-          transcript = ""; 
-          document.getElementById('preview').innerText = "Transmission: ...";
-        });
-    }
-  </script>
+    fetch(`${URL}?testo=${encodeURIComponent(text)}&uid=${uid}`)
+      .then(r => r.json())
+      .then(data => {
+        clearTimeout(tOut);
+        d.innerText = data.text; spk(data.text);
+        text = ""; document.getElementById('pre').innerText = "...";
+      })
+      .catch(e => {
+        clearTimeout(tOut);
+        d.innerText = "Network error. Try again.";
+      });
+  }
+</script>
 </body>
 </html>
