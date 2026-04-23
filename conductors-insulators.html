@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>British Speaking Tutor - High Fidelity Voice</title>
+    <title>Speaking Mission</title>
     <style>
         :root {
             --neon-blue: #00f3ff;
             --neon-pink: #ff00ff;
             --bg-dark: #0a0b10;
         }
-        * { user-select: none; -webkit-user-select: none; }
+        * { user-select: none; -webkit-user-select: none; outline: none; }
         body {
             background-color: var(--bg-dark);
             color: white;
@@ -19,22 +19,23 @@
             height: 100vh; margin: 0; overflow: hidden;
         }
         #terminal {
-            width: 80%; max-width: 600px; height: 300px;
+            width: 85%; max-width: 650px; height: 320px;
             border: 2px solid var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue);
-            background: rgba(0, 0, 0, 0.9); padding: 20px; margin-bottom: 20px;
-            border-radius: 10px; overflow-y: auto; font-size: 1.2rem; line-height: 1.5;
+            background: black; padding: 25px; margin-bottom: 25px;
+            border-radius: 12px; overflow-y: auto; font-size: 1.3rem; line-height: 1.6;
             pointer-events: none;
         }
-        .user-text { color: #ff4d4d; font-style: italic; }
+        .user-text { color: #ff4d4d; font-style: italic; margin-top: 10px; }
         .tutor-text { color: var(--neon-blue); font-weight: bold; }
-        .controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 80%; max-width: 600px; }
+        .controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 85%; max-width: 650px; }
         button {
-            padding: 15px; font-size: 1rem; font-weight: bold; text-transform: uppercase;
+            padding: 18px; font-size: 1.1rem; font-weight: bold; text-transform: uppercase;
             cursor: pointer; border: 2px solid var(--neon-blue); background: transparent;
-            color: var(--neon-blue); transition: all 0.3s; border-radius: 5px; outline: none;
+            color: var(--neon-blue); transition: all 0.3s; border-radius: 8px;
         }
         button:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
         #btn-start { grid-column: span 2; border-color: #39ff14; color: #39ff14; }
+        #btn-start:hover { background: #39ff14; color: black; }
         #btn-report { grid-column: span 2; border-color: var(--neon-pink); color: var(--neon-pink); display: none; }
         .active-rec { animation: pulse 1.5s infinite; border-color: red !important; color: red !important; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
@@ -42,9 +43,9 @@
 </head>
 <body onkeydown="return false;">
 
-    <h1 style="color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue);">BRITISH VOICE FIX: ONLINE</h1>
+    <h1 style="color: var(--neon-blue); text-shadow: 0 0 15px var(--neon-blue); letter-spacing: 2px;">SPEAKING MISSION</h1>
 
-    <div id="terminal">Initializing British Voice Engine... Ready. Keyboard disabled.</div>
+    <div id="terminal"></div>
 
     <div class="controls">
         <button id="btn-start" onclick="startMission()">🚀 Start Mission</button>
@@ -63,33 +64,22 @@
         let currentLevelCount = 0;
         let britishVoice = null;
 
-        // --- SISTEMA VOCALE MIGLIORATO ---
         function loadVoices() {
             const voices = window.speechSynthesis.getVoices();
-            // Cerca prima Google UK English, poi Microsoft Hazel (UK), poi qualsiasi en-GB
-            britishVoice = voices.find(v => v.name === 'Google UK English Male') || 
-                           voices.find(v => v.name === 'Google UK English Female') ||
-                           voices.find(v => v.lang === 'en-GB') || 
-                           voices.find(v => v.lang.includes('en'));
+            britishVoice = voices.find(v => v.name.includes('UK') || v.name.includes('Great Britain') || v.lang === 'en-GB');
         }
-
-        // Forza il caricamento delle voci (alcuni browser sono lenti)
         window.speechSynthesis.onvoiceschanged = loadVoices;
         loadVoices();
 
         function speak(text) {
-            window.speechSynthesis.cancel(); // Ferma voci precedenti
+            window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
-            if (britishVoice) {
-                msg.voice = britishVoice;
-            }
+            if (britishVoice) msg.voice = britishVoice;
             msg.lang = 'en-GB';
-            msg.rate = 0.85; // Leggermente più lento per chiarezza British
-            msg.pitch = 1.0;
+            msg.rate = 0.85;
             window.speechSynthesis.speak(msg);
         }
 
-        // --- RICONOSCIMENTO VOCALE ---
         if ('webkitSpeechRecognition' in window) {
             recognition = new webkitSpeechRecognition();
             recognition.continuous = true;
@@ -110,6 +100,7 @@
 
         function startMission() {
             transcriptBuffer = "";
+            terminal.innerHTML = "<div class='tutor-text'>Establishing connection...</div>";
             fetch(`${SCRIPT_URL}?testo=reset`)
                 .then(res => res.json())
                 .then(data => {
@@ -139,9 +130,9 @@
         }
 
         function sendData() {
-            if (!transcriptBuffer.trim() || transcriptBuffer === "Processing...") return;
+            if (!transcriptBuffer.trim() || transcriptBuffer.includes("Processing")) return;
             const tempText = transcriptBuffer;
-            transcriptBuffer = "Processing...";
+            transcriptBuffer = "Processing data...";
             updateTerminal();
 
             fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(tempText)}`)
@@ -165,6 +156,8 @@
                     speak(data.text);
                 });
         }
+        
+        document.addEventListener('contextmenu', event => event.preventDefault());
     </script>
 </body>
 </html>
