@@ -30,7 +30,6 @@
         }
         button:hover:not(:disabled) { background: var(--neon-blue); color: black; box-shadow: 0 0 15px var(--neon-blue); }
         
-        /* Stile Livelli */
         .btn-lvl { border-color: var(--disabled); color: var(--disabled); opacity: 0.6; cursor: not-allowed; }
         .btn-lvl.active { border-color: var(--neon-green); color: var(--neon-green); opacity: 1; cursor: pointer; box-shadow: 0 0 10px var(--neon-green); }
         .btn-lvl.completed { background: var(--neon-green); color: black; opacity: 1; }
@@ -63,11 +62,12 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWnT_nyuCGb00_GADg_vAOOz-iCx6N_SPr-1-7zuY8u0TVupUvhh68Lx83mCipVsiX/exec";
+        const MY_UID = "id_" + Math.random().toString(36).substr(2, 9);
+        const BASE_URL = "https://script.google.com/macros/s/AKfycbzWnT_nyuCGb00_GADg_vAOOz-iCx6N_SPr-1-7zuY8u0TVupUvhh68Lx83mCipVsiX/exec";
+        
         let recognition;
         let isRecording = false;
         let transcriptBuffer = "";
-        let currentLevelActive = 1;
 
         function speak(text) {
             window.speechSynthesis.cancel();
@@ -89,7 +89,7 @@
 
         function updateTerminal(tutorMsg) {
             const term = document.getElementById('terminal');
-            const currentTutor = tutorMsg || term.querySelector('.tutor-text').innerText;
+            const currentTutor = tutorMsg || (term.querySelector('.tutor-text') ? term.querySelector('.tutor-text').innerText : "");
             term.innerHTML = `<div class="tutor-text">${currentTutor}</div><div class="user-text">> ${transcriptBuffer}</div>`;
             term.scrollTop = term.scrollHeight;
         }
@@ -97,7 +97,7 @@
         function selectLevel(lvl) {
             transcriptBuffer = "";
             updateTerminal("Initializing Level " + lvl + "...");
-            fetch(`${SCRIPT_URL}?testo=startLvl${lvl}`)
+            fetch(`${BASE_URL}?uid=${MY_UID}&testo=startLvl${lvl}`)
                 .then(res => res.json())
                 .then(data => {
                     updateTerminal(data.text);
@@ -121,15 +121,13 @@
             transcriptBuffer = "Processing...";
             updateTerminal();
 
-            fetch(`${SCRIPT_URL}?testo=${encodeURIComponent(textToSend)}`)
+            fetch(`${BASE_URL}?uid=${MY_UID}&testo=${encodeURIComponent(textToSend)}`)
                 .then(res => res.json())
                 .then(data => {
                     transcriptBuffer = "";
                     updateTerminal(data.text);
                     speak(data.text);
                     
-                    // LOGICA SBLOCCO LIVELLI
-                    // Se il server dice che il livello è finito, sblocchiamo il prossimo
                     if (data.text.includes("Level 1 Complete")) unlockLevel(2);
                     if (data.text.includes("Level 2 Complete")) {
                         unlockLevel(3);
@@ -159,11 +157,12 @@
         }
 
         function getReport() {
-            fetch(`${SCRIPT_URL}?testo=report`).then(res => res.json()).then(data => {
+            fetch(`${BASE_URL}?uid=${MY_UID}&testo=report`).then(res => res.json()).then(data => {
                 updateTerminal(data.text);
                 speak(data.text);
             });
         }
+        document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
 </body>
 </html>
